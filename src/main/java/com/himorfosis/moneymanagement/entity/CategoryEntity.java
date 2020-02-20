@@ -21,6 +21,7 @@ public class CategoryEntity {
     private String description;
     private String type_category;
     private String image_category;
+    private String image_category_url;
     private Timestamp created_at;
     private Timestamp updated_at;
 
@@ -78,5 +79,13 @@ public class CategoryEntity {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getImage_category_url() {
+        return image_category_url;
+    }
+
+    public void setImage_category_url(String image_category_url) {
+        this.image_category_url = image_category_url;
     }
 }
