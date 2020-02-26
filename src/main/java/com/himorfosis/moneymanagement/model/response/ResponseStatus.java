@@ -1,10 +1,14 @@
 package com.himorfosis.moneymanagement.model.response;
 
-public class StatusResponse {
+public class ResponseStatus {
 
     private Integer status;
     private String message;
 
+    public ResponseStatus(Integer status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 
     public Integer getStatus() {
         return status;
@@ -21,5 +25,4 @@ public class StatusResponse {
     public void setMessage(String message) {
         this.message = message;
     }
-
 }

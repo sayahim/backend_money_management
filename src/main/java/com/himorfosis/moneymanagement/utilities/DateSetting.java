@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class DateSetting {
 
@@ -47,6 +48,21 @@ public class DateSetting {
         String formatted = myDateObj.format(myFormatObj);
 
         return formatted;
+    }
+
+    public static Date convertStringToDate(String date) {
+
+        try {
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd");
+            return formatter.parse(date);
+
+        } catch (Exception e) {
+
+        }
+
+        return null;
+
     }
 
 }

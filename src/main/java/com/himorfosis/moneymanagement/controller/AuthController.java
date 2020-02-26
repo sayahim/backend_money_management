@@ -38,9 +38,6 @@ public class AuthController {
 
         UsersEntity validationEmail = authRepo.findByEmail(data.getEmail());
 
-//        UsersModel data = authRepo.findById(data.getEmail())
-//                .orElseThrow(() -> new ResourceNotFoundException("Category ", "id", getId));;
-
         if (validationEmail != null) {
 
             status.setStatus(404);
