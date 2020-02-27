@@ -22,7 +22,6 @@ public class UsersEntity {
     private String image;
     private String password;
     private String token;
-    private String code;
     private Integer active;
     private Timestamp created_at;
     private Timestamp updated_at;
@@ -73,14 +72,6 @@ public class UsersEntity {
 
     public void setToken(String token) {
         this.token = token;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public Integer getActive() {

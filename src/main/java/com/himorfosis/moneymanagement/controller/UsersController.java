@@ -2,7 +2,7 @@ package com.himorfosis.moneymanagement.controller;
 
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
-import com.himorfosis.moneymanagement.model.response.StatusResponse;
+import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.AuthRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
@@ -50,7 +50,6 @@ public class UsersController {
             item.setEmail(data.getEmail());
             item.setPassword(data.getPassword());
             item.setPhone_number(data.getPhone_number());
-            item.setCode("");
             item.setCreated_at(DateSetting.timestamp());
             item.setUpdated_at(DateSetting.timestamp());
 
@@ -114,7 +113,6 @@ public class UsersController {
                         update.setEmail(users.getEmail());
                         update.setPassword(users.getPassword());
                         update.setPhone_number(users.getPhone_number());
-                        update.setCode(users.getCode());
                         update.setToken(users.getToken());
                         update.setActive(users.getActive());
                         update.setCreated_at(users.getCreated_at());
@@ -143,7 +141,6 @@ public class UsersController {
                     update.setEmail(users.getEmail());
                     update.setPassword(users.getPassword());
                     update.setPhone_number(users.getPhone_number());
-                    update.setCode(users.getCode());
                     update.setToken(users.getToken());
                     update.setActive(users.getActive());
                     update.setCreated_at(users.getCreated_at());

@@ -1,4 +1,4 @@
-package com.himorfosis.moneymanagement.model.response;
+package com.himorfosis.moneymanagement.model;
 
 import java.sql.Timestamp;
 

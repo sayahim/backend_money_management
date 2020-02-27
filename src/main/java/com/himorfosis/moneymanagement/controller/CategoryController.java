@@ -2,15 +2,13 @@ package com.himorfosis.moneymanagement.controller;
 
 import com.himorfosis.moneymanagement.entity.CategoryEntity;
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
-import com.himorfosis.moneymanagement.model.response.CategoryModel;
-import com.himorfosis.moneymanagement.model.response.ResponseStatus;
-import com.himorfosis.moneymanagement.model.response.StatusResponse;
+import com.himorfosis.moneymanagement.model.CategoryModel;
+import com.himorfosis.moneymanagement.model.ResponseStatus;
+import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
-import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.utilities.Encryption;
-import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,12 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.xml.crypto.Data;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -117,7 +110,10 @@ public class CategoryController {
     public StatusResponse categoryCreate(
             @RequestPart(value = "image", required = false) MultipartFile getImage,
             @RequestPart(value = "title", required = true) @Valid String getTitle,
-            @RequestPart(value = "description", required = true) @Valid String getDescription) {
+            @RequestPart(value = "description", required = true) @Valid String getDescription,
+            @RequestPart(value = "user_id", required = true) @Valid String getUserId,
+            @RequestPart(value = "type_category", required = true) @Valid String getTypeCategory
+            ) {
 
         StatusResponse status = new StatusResponse();
         CategoryEntity item = new CategoryEntity();
@@ -141,6 +137,8 @@ public class CategoryController {
                     item.setTitle(getTitle);
                     item.setDescription(getDescription);
                     item.setImage_category(fileImageName);
+                    item.setType_category(getTypeCategory);
+                    item.setId_user_category(Integer.valueOf(getUserId));
                     item.setImage_category_url(imageStorageService.getLinkimage(fileImageName));
                     item.setCreated_at(DateSetting.timestamp());
                     item.setUpdated_at(DateSetting.timestamp());
@@ -156,6 +154,8 @@ public class CategoryController {
                 // set data
                 item.setTitle(getTitle);
                 item.setDescription(getDescription);
+                item.setType_category(getTypeCategory);
+                item.setId_user_category(Integer.valueOf(getUserId));
                 item.setCreated_at(DateSetting.timestamp());
                 item.setUpdated_at(DateSetting.timestamp());
             }

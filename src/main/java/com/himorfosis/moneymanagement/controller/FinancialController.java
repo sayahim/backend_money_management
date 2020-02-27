@@ -5,9 +5,8 @@ import com.himorfosis.moneymanagement.entity.FinancialEntity;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
 import com.himorfosis.moneymanagement.exception.ResourceNotCompletedException;
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
-import com.himorfosis.moneymanagement.model.response.CategoryModel;
-import com.himorfosis.moneymanagement.model.response.FinancialsModel;
-import com.himorfosis.moneymanagement.model.response.StatusResponse;
+import com.himorfosis.moneymanagement.model.FinancialsModel;
+import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.repository.FinancialsRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
@@ -19,10 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 

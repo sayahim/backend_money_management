@@ -1,9 +1,16 @@
 package com.himorfosis.moneymanagement.repository;
 
+import com.himorfosis.moneymanagement.entity.CategoryEntity;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface AuthRepository extends JpaRepository<UsersEntity, String> {
+import java.util.List;
 
-    UsersEntity findByEmail(String email);
+public interface AuthRepository extends JpaRepository<UsersEntity, Long> {
+
+    @Query(value = "SELECT * FROM users WHERE email :email", nativeQuery = true)
+    List<UsersEntity> checkEmailUser(
+            @Param("email")String email);
 }

@@ -21,6 +21,7 @@ public class CategoryEntity {
     private String description;
     private String type_category;
     private String image_category;
+    private Integer id_user_category;
     private String image_category_url;
     private Timestamp created_at;
     private Timestamp updated_at;
@@ -87,5 +88,13 @@ public class CategoryEntity {
 
     public void setImage_category_url(String image_category_url) {
         this.image_category_url = image_category_url;
+    }
+
+    public Integer getId_user_category() {
+        return id_user_category;
+    }
+
+    public void setId_user_category(Integer id_user_category) {
+        this.id_user_category = id_user_category;
     }
 }
