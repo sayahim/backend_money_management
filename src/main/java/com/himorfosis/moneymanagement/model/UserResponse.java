@@ -1,35 +1,41 @@
-package com.himorfosis.moneymanagement.entity;
+package com.himorfosis.moneymanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 import java.sql.Timestamp;
 
-@Entity
-@Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
-public class UsersEntity {
+public class UserResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     private String name;
     private String email;
     private String phone_number;
     private String image;
-    private String password;
     private String token;
     private Integer active;
     private Timestamp created_at;
     private Timestamp updated_at;
 
-    public Long getId() {
+    public UserResponse(String id, String name, String email, String phone_number,
+                        String image, String token, Integer active,
+                        Timestamp created_at, Timestamp updated_at
+                        ) {
+        this.id = id ;
+        this.name = name;
+        this.email = email;
+        this.phone_number = phone_number;
+        this.image = image;
+        this.token = token;
+        this.active = active;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+
+    }
+
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -79,14 +85,6 @@ public class UsersEntity {
 
     public void setActive(Integer active) {
         this.active = active;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public Timestamp getCreated_at() {

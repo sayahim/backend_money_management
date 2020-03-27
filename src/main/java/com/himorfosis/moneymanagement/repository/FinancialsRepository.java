@@ -8,12 +8,10 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface FinancialsRepository extends JpaRepository<FinancialEntity, String> {
+public interface FinancialsRepository extends JpaRepository<FinancialEntity, Long> {
 
-    @Query(value = "SELECT * FROM financials WHERE id :userId", nativeQuery = true)
-    List<FinancialEntity> findAllFinancialUsers(@Param("userId")Long userId);
+    @Query(value = "SELECT * FROM financials WHERE id_user = ?1", nativeQuery = true)
+    List<FinancialEntity> findAllFinancialUsers(String userId);
 
-    @Query(value = "SELECT * FROM financials WHERE id :id", nativeQuery = true)
-    FinancialEntity findId(@Param("id")Long id);
 
 }

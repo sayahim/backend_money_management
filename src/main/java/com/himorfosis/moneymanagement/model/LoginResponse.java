@@ -1,20 +1,10 @@
-package com.himorfosis.moneymanagement.entity;
+package com.himorfosis.moneymanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 import java.sql.Timestamp;
 
-@Entity
-@Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
-public class UsersEntity {
+public class LoginResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     private String name;
     private String email;
     private String phone_number;
@@ -25,11 +15,12 @@ public class UsersEntity {
     private Timestamp created_at;
     private Timestamp updated_at;
 
-    public Long getId() {
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -65,6 +56,14 @@ public class UsersEntity {
         this.image = image;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getToken() {
         return token;
     }
@@ -79,14 +78,6 @@ public class UsersEntity {
 
     public void setActive(Integer active) {
         this.active = active;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public Timestamp getCreated_at() {
@@ -104,5 +95,6 @@ public class UsersEntity {
     public void setUpdated_at(Timestamp updated_at) {
         this.updated_at = updated_at;
     }
+
 
 }

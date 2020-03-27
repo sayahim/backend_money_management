@@ -3,6 +3,7 @@ package com.himorfosis.moneymanagement.controller;
 import com.himorfosis.moneymanagement.entity.CategoryEntity;
 import com.himorfosis.moneymanagement.entity.FinancialEntity;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
+import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.exception.ResourceNotCompletedException;
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
 import com.himorfosis.moneymanagement.model.FinancialsModel;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/financials")
@@ -37,8 +39,34 @@ public class FinancialController {
     UsersRepository usersRepository;
 
     @GetMapping("/")
-    public List<FinancialEntity> getAllFinancials() {
-        return financialsRepository.findAll();
+    public List<FinancialsModel> getAllFinancials() {
+
+        List<FinancialEntity> dataFinancials = financialsRepository.findAll();
+        List<FinancialsModel> listData = new ArrayList<>();
+
+        if (dataFinancials == null) {
+
+            new MessageException("Data Tidak Tersedia");
+
+        } else {
+
+            for (FinancialEntity item : dataFinancials) {
+
+                listData.add(new FinancialsModel(
+                        Encryption.setEncrypt(String.valueOf(item.getId())),
+                        Encryption.setEncrypt(String.valueOf(item.getId_category())),
+                        Encryption.setEncrypt(String.valueOf(item.getId_user())),
+                        item.getCode(),
+                        item.getType_financial(),
+                        item.getNominal(),
+                        item.getNote(),
+                        item.getCreated_at(),
+                        item.getCreated_at())
+                );
+            }
+        }
+
+        return listData;
     }
 
     @PostMapping(value = "/findAllFinancialUsers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -50,12 +78,13 @@ public class FinancialController {
         if (getUserId == null) {
 
             new ResourceNotCompletedException(500, "Please complete the data");
-
         } else {
 
-            Long userId = Long.parseLong(Encryption.getDecrypt(getUserId));
+            String idDecrypt = Encryption.getDecrypt(getUserId);
 
-            List<FinancialEntity> financialsData = financialsRepository.findAllFinancialUsers(userId);
+            Util.log(TAG, "id : " + idDecrypt);
+
+            List<FinancialEntity> financialsData = financialsRepository.findAllFinancialUsers(idDecrypt);
 
             for (FinancialEntity item : financialsData) {
 
@@ -99,8 +128,7 @@ public class FinancialController {
             Long idUser = Long.valueOf(getIdUser);
             Long nominal = Long.valueOf(getNominal);
 
-            UsersEntity userCheck = usersRepository.findById(idCategory)
-                    .orElseThrow(() -> new ResourceNotFoundException("Data", "id", getIdUser));
+            UsersEntity userCheck = usersRepository.findId(idCategory);
 
             CategoryEntity categoryCheck = categoryRepository.findById(idUser)
                     .orElseThrow(() -> new ResourceNotFoundException("Data", "id", getIdCategory));
@@ -143,9 +171,11 @@ public class FinancialController {
 
                 StatusResponse status = new StatusResponse();
 
-                Long id = Long.parseLong(getIdFinancial);
+                String idDecrypt = Encryption.getDecrypt(getIdFinancial);
 
-                FinancialEntity data = financialsRepository.findId(id);
+//                FinancialEntity data = financialsRepository.findById(Long.valueOf(idDecrypt));
+            FinancialEntity data = financialsRepository.findById(Long.valueOf(idDecrypt))
+                    .orElseThrow(() -> new ResourceNotFoundException("Users", "id", idDecrypt));
 
                 Util.log(TAG, "data : " + data);
 

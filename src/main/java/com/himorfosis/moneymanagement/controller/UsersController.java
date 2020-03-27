@@ -1,23 +1,32 @@
 package com.himorfosis.moneymanagement.controller;
 
+import com.himorfosis.moneymanagement.entity.CategoryEntity;
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
+import com.himorfosis.moneymanagement.model.CategoryModel;
 import com.himorfosis.moneymanagement.model.StatusResponse;
+import com.himorfosis.moneymanagement.model.UserResponse;
 import com.himorfosis.moneymanagement.repository.AuthRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
+import com.himorfosis.moneymanagement.utilities.Encryption;
+import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
+
+    private String TAG = "UsersController";
 
     @Autowired
     UsersRepository usersRepo;
@@ -27,14 +36,52 @@ public class UsersController {
     AuthRepository authRepo;
 
     @GetMapping("/all")
-    public List<UsersEntity> getAllUsers() {
-        return usersRepo.findAll();
+    public List<UserResponse> getAllUsers() {
+
+        List<UserResponse> userData = new ArrayList<>();
+
+        List<UsersEntity> listData = usersRepo.findAll();
+        for (UsersEntity item : listData) {
+
+            userData.add(new UserResponse(
+                    Encryption.setEncrypt(String.valueOf(item.getId())),
+                    item.getName(),
+                    item.getEmail(),
+                    item.getPhone_number(),
+                    item.getImage(),
+                    item.getToken(),
+                    item.getActive(),
+                    item.getCreated_at(),
+                    item.getUpdated_at()
+            ));
+        }
+
+        return userData;
     }
 
-    @GetMapping("/detail/{id}")
-    public UsersEntity getNoteById(@PathVariable(value = "id") Long getId) {
-        return usersRepo.findById(getId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", "id", getId));
+    @PostMapping(value = "/details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserResponse getDetailUsers(
+            @RequestPart(value = "id", required = true) @Valid String getId) {
+
+        String decryptId = Encryption.getDecrypt(getId);
+        Util.log(TAG, decryptId);
+
+        UsersEntity item = usersRepo.findById(Long.valueOf(decryptId))
+                .orElseThrow(() -> new ResourceNotFoundException("Users", "id", decryptId));
+
+        UserResponse data = new UserResponse(
+                Encryption.setEncrypt(String.valueOf(item.getId())),
+                item.getName(),
+                item.getEmail(),
+                item.getPhone_number(),
+                item.getImage(),
+                item.getToken(),
+                item.getActive(),
+                item.getCreated_at(),
+                item.getUpdated_at());
+
+        return data;
+
     }
 
     @PostMapping(value = "/create")
@@ -86,8 +133,7 @@ public class UsersController {
 
             Long idUser = Long.valueOf(getId);
 
-            UsersEntity users = usersRepo.findById(idUser)
-                    .orElseThrow(() -> new ResourceNotFoundException("Users", "id", idUser));
+            UsersEntity users = usersRepo.findId(idUser);
 
             if (users != null) {
 

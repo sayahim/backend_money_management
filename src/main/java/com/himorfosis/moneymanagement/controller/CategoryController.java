@@ -26,6 +26,9 @@ public class CategoryController {
 
     private String TAG = "CategoryController";
 
+    private String TIME_START = " 00:00:00";
+    private String TIME_FINISH = " 23:59:59";
+
     @Autowired
     CategoryRepository categoryRepository;
     @Autowired
@@ -62,7 +65,7 @@ public class CategoryController {
 
         List<CategoryModel> category = new ArrayList<>();
 
-        List<CategoryEntity> listData = categoryRepository.sortDateBy(getStart + " 00:00:00" , getFinish + " 23:59:59");
+        List<CategoryEntity> listData = categoryRepository.sortDateBy(getStart + TIME_START , getFinish + TIME_FINISH);
         for (CategoryEntity item : listData) {
 
             category.add(new CategoryModel(
@@ -81,13 +84,25 @@ public class CategoryController {
     }
 
     @PostMapping(value = "/details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CategoryEntity> categoryDetails(
+    public ResponseEntity<CategoryModel> categoryDetails(
             @RequestPart(value = "id", required = true) @Valid String getId) {
 
-        CategoryEntity data = categoryRepository.findById(Long.valueOf(getId))
+        String getDescrypt = Encryption.getDecrypt(getId);
+
+        CategoryEntity item = categoryRepository.findById(Long.valueOf(getDescrypt))
                 .orElseThrow(() -> new ResourceNotFoundException("Data", "id", getId));
 
-        return new ResponseEntity<CategoryEntity>(data, HttpStatus.OK);
+        CategoryModel data = new CategoryModel(
+                Encryption.setEncrypt(String.valueOf(item.getId())),
+                item.getTitle(),
+                item.getDescription(),
+                item.getType_category(),
+                item.getImage_category(),
+                item.getImage_category_url(),
+                item.getCreated_at(),
+                item.getUpdated_at());
+
+        return new ResponseEntity<CategoryModel>(data, HttpStatus.OK);
     }
 
     @PostMapping(value = "/encryption", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
