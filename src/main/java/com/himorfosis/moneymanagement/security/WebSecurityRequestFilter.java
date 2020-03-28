@@ -1,4 +1,4 @@
-package com.himorfosis.moneymanagement.config;
+package com.himorfosis.moneymanagement.security;
 
 import com.himorfosis.moneymanagement.service.SecurityUserDetailService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -17,10 +17,10 @@ import java.io.IOException;
 
 public class WebSecurityRequestFilter extends OncePerRequestFilter {
 
-
     @Autowired
     private SecurityUserDetailService userDetailService;
 
+    @Autowired
     private final WebSecurityToken webSecurityToken;
 
     public WebSecurityRequestFilter(WebSecurityToken webSecurityToken) {
@@ -34,10 +34,8 @@ public class WebSecurityRequestFilter extends OncePerRequestFilter {
 
         final String requestTokenHeader = httpServletRequest.getHeader("Authorization");
 
-        String username = null;
-
+        String email = null;
         String jwtToken = null;
-
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
 
@@ -45,7 +43,7 @@ public class WebSecurityRequestFilter extends OncePerRequestFilter {
 
             try {
 
-                username = webSecurityToken.getUsernameFromToken(jwtToken);
+                email = webSecurityToken.getUsernameFromToken(jwtToken);
 
             } catch (IllegalArgumentException e) {
 
@@ -64,10 +62,9 @@ public class WebSecurityRequestFilter extends OncePerRequestFilter {
         }
 
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = this.userDetailService.loadUserByUsername(username);
-
+            UserDetails userDetails = this.userDetailService.loadUserByUsername(email);
 
             if (webSecurityToken.validateToken(jwtToken, userDetails)) {
 

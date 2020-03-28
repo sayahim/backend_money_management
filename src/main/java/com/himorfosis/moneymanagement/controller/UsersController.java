@@ -1,16 +1,14 @@
 package com.himorfosis.moneymanagement.controller;
 
-import com.himorfosis.moneymanagement.entity.CategoryEntity;
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
-import com.himorfosis.moneymanagement.model.CategoryModel;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.model.UserResponse;
 import com.himorfosis.moneymanagement.repository.AuthRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.utilities.Encryption;
+import com.himorfosis.moneymanagement.utilities.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +64,7 @@ public class UsersController {
         Util.log(TAG, decryptId);
 
         UsersEntity item = usersRepo.findById(Long.valueOf(decryptId))
-                .orElseThrow(() -> new ResourceNotFoundException("Users", "id", decryptId));
+                .orElseThrow(() -> new ResourceNotFoundException(decryptId));
 
         UserResponse data = new UserResponse(
                 Encryption.setEncrypt(String.valueOf(item.getId())),

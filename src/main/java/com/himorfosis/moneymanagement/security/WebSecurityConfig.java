@@ -1,4 +1,4 @@
-package com.himorfosis.moneymanagement.config;
+package com.himorfosis.moneymanagement.security;
 
 import com.himorfosis.moneymanagement.service.SecurityUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,25 +22,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private WebSecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
-
     @Autowired
     private SecurityUserDetailService securityUserDetailService;
-
     @Autowired
     private WebSecurityRequestFilter webSecurityRequestFilter;
-
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-
         auth.userDetailsService(securityUserDetailService).passwordEncoder(passwordEncoder());
-
     }
 
     @Bean
     public WebSecurityAuthenticationEntryPoint securityAuthenticationEntryPointBean() throws Exception{
         return new WebSecurityAuthenticationEntryPoint();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,10 +53,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         httpSecurity.csrf().disable()
 
-                .authorizeRequests().antMatchers("/authenticate","/user").permitAll().
-
+                .authorizeRequests()
+                .antMatchers("/api/","login").permitAll()
+                .antMatchers("/api/","category").permitAll().
                 anyRequest().authenticated().and().
-
                 exceptionHandling().authenticationEntryPoint(securityAuthenticationEntryPoint).and().sessionManagement()
 
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

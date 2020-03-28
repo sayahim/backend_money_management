@@ -12,7 +12,7 @@ import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.repository.FinancialsRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.utilities.Encryption;
+import com.himorfosis.moneymanagement.utilities.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/financials")
@@ -131,7 +130,7 @@ public class FinancialController {
             UsersEntity userCheck = usersRepository.findId(idCategory);
 
             CategoryEntity categoryCheck = categoryRepository.findById(idUser)
-                    .orElseThrow(() -> new ResourceNotFoundException("Data", "id", getIdCategory));
+                    .orElseThrow(() -> new ResourceNotFoundException(getIdCategory));
 
             if (getTypeFinancials.equals("spend") || getTypeFinancials.equals("income")) {
 
@@ -175,7 +174,7 @@ public class FinancialController {
 
 //                FinancialEntity data = financialsRepository.findById(Long.valueOf(idDecrypt));
             FinancialEntity data = financialsRepository.findById(Long.valueOf(idDecrypt))
-                    .orElseThrow(() -> new ResourceNotFoundException("Users", "id", idDecrypt));
+                    .orElseThrow(() -> new ResourceNotFoundException(idDecrypt));
 
                 Util.log(TAG, "data : " + data);
 

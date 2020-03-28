@@ -8,7 +8,7 @@ import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.utilities.Encryption;
+import com.himorfosis.moneymanagement.utilities.encryption.Encryption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -90,7 +90,7 @@ public class CategoryController {
         String getDescrypt = Encryption.getDecrypt(getId);
 
         CategoryEntity item = categoryRepository.findById(Long.valueOf(getDescrypt))
-                .orElseThrow(() -> new ResourceNotFoundException("Data", "id", getId));
+                .orElseThrow(() -> new ResourceNotFoundException(getId));
 
         CategoryModel data = new CategoryModel(
                 Encryption.setEncrypt(String.valueOf(item.getId())),
@@ -203,7 +203,7 @@ public class CategoryController {
             Long idUser = Long.valueOf(getId);
 
             CategoryEntity checkCategory = categoryRepository.findById(idUser)
-                    .orElseThrow(() -> new ResourceNotFoundException("Users", "id", idUser));
+                    .orElseThrow(() -> new ResourceNotFoundException(idUser));
 
             if (checkCategory != null) {
 
@@ -268,7 +268,7 @@ public class CategoryController {
         System.out.println("category id : " + getId);
         Long id = Long.parseLong(Encryption.getDecrypt(getId));
 
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
         StatusResponse status = new StatusResponse();
 
         if (getId != null) {

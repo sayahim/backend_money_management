@@ -16,14 +16,13 @@ public class SecurityUserDetailService implements UserDetailsService {
     @Autowired
     private UsersRepository usersRepo;
 
-
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        UsersEntity user = usersRepo.findByEmail(username);
+        UsersEntity user = usersRepo.findByEmail(email);
 
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with username: " + username);
+            throw new UsernameNotFoundException("User not found with email: " + email);
         }
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
                 new ArrayList<>());

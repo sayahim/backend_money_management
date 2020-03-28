@@ -1,21 +1,19 @@
 package com.himorfosis.moneymanagement.controller;
 
-import com.himorfosis.moneymanagement.config.WebSecurityToken;
+import com.himorfosis.moneymanagement.security.WebSecurityToken;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
 import com.himorfosis.moneymanagement.exception.AccountIncorrectException;
 import com.himorfosis.moneymanagement.exception.AccountUsedException;
 import com.himorfosis.moneymanagement.exception.DataNotCompleteException;
 import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.model.AuthenticateResponse;
-import com.himorfosis.moneymanagement.model.LoginResponse;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.model.UserResponse;
-import com.himorfosis.moneymanagement.repository.AuthRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.service.SecurityUserDetailService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.utilities.Encryption;
+import com.himorfosis.moneymanagement.utilities.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -28,7 +26,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -177,10 +174,7 @@ public class AuthController {
 
         authenticate(getEmail, getPassword);
 
-        final UserDetails userDetails = securityUserDetailService
-
-                .loadUserByUsername(getEmail);
-
+        final UserDetails userDetails = securityUserDetailService.loadUserByUsername(getEmail);
         final String token = securityToken.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthenticateResponse(token));
