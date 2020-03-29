@@ -10,7 +10,14 @@ import java.util.List;
 
 public interface AuthRepository extends JpaRepository<UsersEntity, Long> {
 
-    @Query(value = "SELECT * FROM users WHERE email :email", nativeQuery = true)
-    List<UsersEntity> checkEmailUser(
-            @Param("email")String email);
+//    @Query(value = "SELECT * FROM users WHERE email :email", nativeQuery = true)
+//    List<UsersEntity> checkEmailUser(
+//            @Param("email")String email);
+
+    UsersEntity findByEmail(String username);
+
+
+//    @Query(value = "SELECT * FROM users WHERE email :email", nativeQuery = true)
+//    public UsersEntity findByEmail(String email);
+
 }

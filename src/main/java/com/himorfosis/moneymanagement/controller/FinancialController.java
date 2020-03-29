@@ -12,7 +12,7 @@ import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.repository.FinancialsRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.utilities.encryption.Encryption;
+import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

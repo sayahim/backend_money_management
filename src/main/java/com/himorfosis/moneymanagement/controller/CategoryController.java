@@ -8,7 +8,7 @@ import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.utilities.encryption.Encryption;
+import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +34,7 @@ public class CategoryController {
     @Autowired
     ImageStorageService imageStorageService;
 
-    @GetMapping("")
+    @GetMapping("/all")
     public List<CategoryModel> categoryAll() {
 
         List<CategoryModel> category = new ArrayList<>();
