@@ -1,4 +1,4 @@
-package com.himorfosis.moneymanagement.utilities.encryption;
+package com.himorfosis.moneymanagement.security.encryption;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
