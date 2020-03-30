@@ -23,8 +23,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private JwtSecurityDetailService jwtSecurityDetailService;
 
     private final JwtSecurityToken jwtSecurityToken;
-    private String Authorization = "Authorization";
-    private String Bearer = " Bearer";
     private String TAG = "JwtRequestFilter";
 
     public JwtRequestFilter(JwtSecurityToken jwtSecurityToken) {
@@ -38,13 +36,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         isError("Filter Start ...");
 
         String requestTokenHeader = httpServletRequest.getHeader("Authorization");
-        String email = null;
+        String username = null;
         String jwtToken = null;
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
-                 email = jwtSecurityToken.getUsernameFromToken(jwtToken);
+                username = jwtSecurityToken.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
                 isError("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
@@ -54,11 +52,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             isError("JWT Token does not begin with Bearer String");
         }
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        isError("Email : " + username);
+        isError("Security : " + SecurityContextHolder.getContext().getAuthentication());
 
-            isError("Email : " + email);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = this.jwtSecurityDetailService.loadUserByUsername(email);
+            UserDetails userDetails = this.jwtSecurityDetailService.loadUserByUsername(username);
             if (jwtSecurityToken.validateToken(jwtToken, userDetails)) {
 
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =

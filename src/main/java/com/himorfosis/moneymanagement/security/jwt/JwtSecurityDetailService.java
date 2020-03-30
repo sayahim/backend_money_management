@@ -18,21 +18,24 @@ public class JwtSecurityDetailService implements UserDetailsService {
 
     @Autowired
     private UsersRepository usersRepository;
+    private String TAG = "JwtSecurityDetailService";
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
 
-        Util.log("JwtSecurityDetailService", "joss...");
-//        return new User("him", "secret", new ArrayList<>());
-
-        UsersEntity user = usersRepository.findByEmail(s);
-
-        Util.log("JwtSecurityDetailService", "user : " + user.getEmail());
+        isLog("joss...");
+        UsersEntity user = usersRepository.findByUsername(s);
+        isLog("user : " + user);
 
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with email: " + s);
+            isLog("User not found with username = " + s);
+            throw new UsernameNotFoundException("User not found with username: " + s);
         }
-        return new User(user.getEmail(), user.getPassword(),
+        return new User(user.getUsername(), user.getPassword(),
                 new ArrayList<>());
+    }
+
+    private void isLog(String message) {
+        Util.log(TAG, message);
     }
 }

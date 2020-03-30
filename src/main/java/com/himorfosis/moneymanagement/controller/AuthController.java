@@ -6,12 +6,14 @@ import com.himorfosis.moneymanagement.exception.AccountUsedException;
 import com.himorfosis.moneymanagement.exception.DataNotCompleteException;
 import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.model.AuthenticateResponse;
+import com.himorfosis.moneymanagement.model.JwtRequest;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.model.UserResponse;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.security.jwt.JwtSecurityDetailService;
 import com.himorfosis.moneymanagement.security.jwt.JwtSecurityToken;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
+import com.himorfosis.moneymanagement.state.MsgState;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
@@ -30,6 +32,7 @@ import javax.validation.Valid;
 
 @RestController
 @CrossOrigin
+@RequestMapping("/api/")
 public class AuthController {
 
     // update password
@@ -49,7 +52,9 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    MsgState msgState;
+
+    @PostMapping(value = "register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StatusResponse create(
             @RequestPart(value = "name", required = true) @Valid String getName,
             @RequestPart(value = "email", required = true) @Valid String getEmail,
@@ -65,39 +70,54 @@ public class AuthController {
         UsersEntity emailValidation = usersRepo.findByEmail(getEmail);
 
         if (emailValidation != null) {
-
             throw new AccountUsedException("Email");
-
         } else {
 
             if (!getName.isEmpty() && !getEmail.isEmpty() && !getPassword.isEmpty() && !getPasswordConfirm.isEmpty()) {
 
-                //check password
-                if (getPassword.equals(getPasswordConfirm)) {
+                // validate email
+                try {
 
-                    String encodedPassword = new BCryptPasswordEncoder().encode(getPassword);
+                    String validateEmail = getEmail.substring(getEmail.indexOf('@'), getEmail.length());
+                    isLog(validateEmail);
+                    if (validateEmail.toLowerCase().equals("@gmail.com")) {
 
-                    // set data
-                    item.setName(getName);
-                    item.setEmail(getEmail);
-                    item.setPassword(encodedPassword);
-                    item.setCreated_at(DateSetting.timestamp());
-                    item.setUpdated_at(DateSetting.timestamp());
+                        //check password
+                        if (getPassword.equals(getPasswordConfirm)) {
 
-                    // save data
-                    usersRepo.save(item);
+                            // encrypt password
+                            String encodedPassword = new BCryptPasswordEncoder().encode(getPassword);
+                            //generate username
+                            String generateUsername = getEmail.substring(0, getEmail.indexOf('@'));
 
-                    // set response callback
-                    status.setStatus(200);
-                    status.setMessage("Register Success");
+                            // set data
+                            item.setName(getName);
+                            item.setEmail(getEmail);
+                            item.setUsername(generateUsername);
+                            item.setPassword(encodedPassword);
+                            item.setCreated_at(DateSetting.timestamp());
+                            item.setUpdated_at(DateSetting.timestamp());
 
-                } else {
+                            // save data
+                            usersRepo.save(item);
 
-                    throw new MessageException("Password does not match");
+                            // set response callback
+                            status.setStatus(200);
+                            status.setMessage(MsgState.SUCCESS);
+                        } else {
+                            throw new MessageException(MsgState.Pass_not_match);
+                        }
+                    } else {
+                        throw new MessageException(MsgState.Email_not_valid);
+                    }
+
+                } catch (Exception e) {
+                    String errorMessage = e.toString();
+                    String validateEmail = errorMessage.substring(errorMessage.indexOf(':'), errorMessage.length());
+                    throw new MessageException(validateEmail);
                 }
 
             } else {
-
                 throw new DataNotCompleteException();
             }
 
@@ -106,7 +126,31 @@ public class AuthController {
         return status;
     }
 
-    @PostMapping(value = "/login", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    @PostMapping(value = "authenticate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<AuthenticateResponse> createAuthenticationToken(
+//            @RequestPart(value = "email", required = true) @Valid String getEmail,
+//            @RequestPart(value = "password", required = true) @Valid String getPassword
+//    ) throws Exception {
+
+    @RequestMapping(value = "authenticate", method = RequestMethod.POST)
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
+        isLog("authenticate here");
+        isLog("username : " + authenticationRequest.getUsername());
+        isLog("pass : " + authenticationRequest.getPassword());
+        authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+        final UserDetails userDetails = jwtSecurityDetailService.loadUserByUsername(authenticationRequest.getUsername());
+        isLog("userDetails : " + userDetails.getUsername());
+        final String token = jwtSecurityToken.generateToken(userDetails);
+        isLog("token : " + token);
+        return ResponseEntity.ok(new AuthenticateResponse(token));
+
+    }
+
+    private void isLog(String message) {
+        Util.log(TAG, message);
+    }
+
+    @PostMapping(value = "login", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UserResponse login(
             @RequestPart(value = "email", required = true) @Valid String getEmail,
             @RequestPart(value = "password", required = true) @Valid String getPassword) {
@@ -167,31 +211,20 @@ public class AuthController {
     }
 
 
-    private void authenticate(String email, String password) throws Exception {
+    private void authenticate(String username, String password) throws Exception {
+        isLog("authenticate : ");
 
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         } catch (DisabledException e) {
+            isLog("INVALID_CREDENTIALS : " + e);
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
+            isLog("INVALID_CREDENTIALS : " + e);
+//            throw new Exception("INVALID_CREDENTIALS", e);
         }
 
     }
 
-    @PostMapping(value = "/authenticate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createAuthenticationToken(
-            @RequestPart(value = "email", required = true) @Valid String getEmail,
-            @RequestPart(value = "password", required = true) @Valid String getPassword
-    ) throws Exception {
-
-        Util.log("tag", "authenticate here");
-
-        authenticate(getEmail, getPassword);
-        final UserDetails userDetails = jwtSecurityDetailService.loadUserByUsername(getEmail);
-        final String token = jwtSecurityToken.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthenticateResponse(token));
-
-    }
 
 }

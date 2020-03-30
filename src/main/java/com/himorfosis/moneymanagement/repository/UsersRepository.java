@@ -23,5 +23,6 @@ public interface UsersRepository extends JpaRepository<UsersEntity, Long> {
             @Param("getMail")String getMail);
 
     public UsersEntity findByEmail(String email);
+    public UsersEntity findByUsername(String username);
 
 }
