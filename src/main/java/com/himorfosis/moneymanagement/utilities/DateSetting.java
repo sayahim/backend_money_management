@@ -18,18 +18,24 @@ public class DateSetting {
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         System.out.println(timestamp);
 
-//        //method 2 - via Date
-//        Date date = new Date();
-//        System.out.println(new Timestamp(date.getTime()));
-//
-//        //return number of milliseconds since January 1, 1970, 00:00:00 GMT
-//        System.out.println(timestamp.getTime());
-
         //format timestamp
         System.out.println(sdf.format(timestamp));
 
         return timestamp;
 
+    }
+
+    public static Timestamp generateDateToTimestamp(String date) {
+
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd");
+            Date dataTime = formatter.parse(date);
+            Timestamp timestamp = new Timestamp(dataTime.getTime());
+            return timestamp;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return null;
     }
 
     public static String dateTimeGenerator() {

@@ -6,6 +6,7 @@ import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.model.UserResponse;
 import com.himorfosis.moneymanagement.repository.AuthRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
+import com.himorfosis.moneymanagement.security.encryption.UserEncrypt;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.security.encryption.Encryption;
@@ -41,7 +42,7 @@ public class UsersController {
         for (UsersEntity item : listData) {
 
             userData.add(new UserResponse(
-                    Encryption.setEncrypt(String.valueOf(item.getId())),
+                    UserEncrypt.generateEncrypt(String.valueOf(item.getId())),
                     item.getName(),
                     item.getEmail(),
                     item.getPhone_number(),
@@ -128,9 +129,9 @@ public class UsersController {
 
         } else {
 
-            Long idUser = Long.valueOf(getId);
-
-            UsersEntity users = usersRepo.findId(idUser);
+            Long idUser = (Long.valueOf(UserEncrypt.generateEncrypt(getId)));
+            UsersEntity users = usersRepo.findById(idUser)
+                    .orElseThrow(() -> new ResourceNotFoundException(getId));
 
             if (users != null) {
 

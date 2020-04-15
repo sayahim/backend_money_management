@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -17,7 +18,6 @@ public class UsersEntity {
     private Long id;
     private String name;
     private String email;
-    private String username;
     private String phone_number;
     private String image;
     private String password;
@@ -106,11 +106,4 @@ public class UsersEntity {
         this.updated_at = updated_at;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 }

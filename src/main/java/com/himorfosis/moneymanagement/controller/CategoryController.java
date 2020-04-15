@@ -1,18 +1,25 @@
 package com.himorfosis.moneymanagement.controller;
 
+import com.himorfosis.moneymanagement.entity.CategoryData;
 import com.himorfosis.moneymanagement.entity.CategoryEntity;
+import com.himorfosis.moneymanagement.exception.AccountUsedException;
+import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
+import com.himorfosis.moneymanagement.key.DataKey;
 import com.himorfosis.moneymanagement.model.CategoryModel;
 import com.himorfosis.moneymanagement.model.ResponseStatus;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
+import com.himorfosis.moneymanagement.state.MsgState;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.security.encryption.Encryption;
+import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,13 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/category/")
 public class CategoryController {
 
     private String TAG = "CategoryController";
 
     private String TIME_START = " 00:00:00";
     private String TIME_FINISH = " 23:59:59";
+    private String SPEND_TYPE = "spend";
+    private String INCOME_TYPE = "income";
 
     @Autowired
     CategoryRepository categoryRepository;
@@ -57,11 +66,44 @@ public class CategoryController {
         return category;
     }
 
-    @PostMapping(value = "/sortByDate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/type_finance", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public List<CategoryModel> getCategorySpending(
+            @RequestParam MultiValueMap<String,String> paramMap) {
+
+        String getTypeFinance = paramMap.getFirst("type");
+
+        List<CategoryModel> category = new ArrayList<>();
+
+        if (getTypeFinance.equals(DataKey.Spend) || getTypeFinance.equals(DataKey.Income)) {
+
+            List<CategoryEntity> listData = categoryRepository.findByCategoryTypeFinance(getTypeFinance);
+            for (CategoryEntity item : listData) {
+                category.add(new CategoryModel(
+                        Encryption.setEncrypt(String.valueOf(item.getId())),
+                        item.getTitle(),
+                        item.getDescription(),
+                        item.getType_category(),
+                        item.getImage_category(),
+                        item.getImage_category_url(),
+                        item.getCreated_at(),
+                        item.getUpdated_at()
+                ));
+            }
+
+        } else {
+            isError("Wrong Type Finance");
+        }
+
+        return category;
+    }
+
+    @PostMapping(value = "/sortByDate", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public List<CategoryModel> categorySortByDate(
-            @RequestPart(value = "date_start", required = true) @Valid String getStart,
-            @RequestPart(value = "date_finish", required = true) @Valid String getFinish
+            @RequestParam MultiValueMap<String,String> paramMap
     ) {
+
+        String getStart = paramMap.getFirst("date_start");
+        String getFinish = paramMap.getFirst("date_end");
 
         List<CategoryModel> category = new ArrayList<>();
 
@@ -83,10 +125,11 @@ public class CategoryController {
         return category;
     }
 
-    @PostMapping(value = "/details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/details", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<CategoryModel> categoryDetails(
-            @RequestPart(value = "id", required = true) @Valid String getId) {
+            @RequestParam MultiValueMap<String,String> paramMap) {
 
+        String getId = paramMap.getFirst("id");
         String getDescrypt = Encryption.getDecrypt(getId);
 
         CategoryEntity item = categoryRepository.findById(Long.valueOf(getDescrypt))
@@ -103,22 +146,6 @@ public class CategoryController {
                 item.getUpdated_at());
 
         return new ResponseEntity<CategoryModel>(data, HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/encryption", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseStatus dataEncryption(
-            @RequestPart(value = "data", required = true) @Valid String getData) {
-
-        String dataEncryption = Encryption.setEncrypt(getData);
-        return new ResponseStatus(200, dataEncryption);
-    }
-
-    @PostMapping(value = "/decryption", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseStatus dataDecryption(
-            @RequestPart(value = "data", required = true) @Valid String getData) {
-
-        String dataDescryption = Encryption.getDecrypt(getData);
-        return new ResponseStatus(200, dataDescryption);
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -184,12 +211,23 @@ public class CategoryController {
         return status;
     }
 
-    @PutMapping(value = "update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+    //    @PostMapping(value = "login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+//    public ResponseEntity<?> login(
+//            @RequestParam MultiValueMap<String,String> paramMap) throws Exception {
+//
+//        String getEmail = paramMap.getFirst("email");
+//        String getPassword = paramMap.getFirst("password");
+
+    @PutMapping(value = "update", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public StatusResponse categoryUpdate(
-            @RequestPart(value = "image", required = false) MultipartFile getImage,
-            @RequestPart(value = "id", required = true) @Valid String getId,
-            @RequestPart(value = "title", required = true) @Valid String getTitle,
-            @RequestPart(value = "description", required = true) @Valid String getDescription) {
+            @RequestParam MultiValueMap<String,String> paramMap,
+            @RequestParam MultiValueMap<String, MultipartFile> paramFile) {
+
+        String getTitle = paramMap.getFirst("title");
+        String getDescription = paramMap.getFirst("description");
+        String getId = paramMap.getFirst("id");
+        MultipartFile getImage = paramFile.getFirst("image");
 
         StatusResponse status = new StatusResponse();
 
@@ -262,7 +300,7 @@ public class CategoryController {
         return status;
     }
 
-    @DeleteMapping(value = "delete/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @DeleteMapping(value = "delete", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StatusResponse delete(@RequestPart(value = "id", required = true) @Valid String getId) {
 
         System.out.println("category id : " + getId);
@@ -294,28 +332,81 @@ public class CategoryController {
         return status;
     }
 
-    @PostMapping(value = "/generateInputData")
-    public StatusResponse generateInputData() {
+    @PostMapping(value = "createPrivateAdm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public StatusResponse createPrivateAdm(
+            @RequestPart(value = "pass", required = true) @Valid String getPass)  {
 
-        StatusResponse status = new StatusResponse();
+        StatusResponse response = new StatusResponse();
 
-        for (int i = 0; i < 10; i++) {
+        if (getPass.equals("$idehim")) {
+            for (CategoryData data :listDataCreateCategory()) {
 
-            CategoryEntity item = new CategoryEntity();
+                CategoryEntity item = new CategoryEntity();
 
-            // set data
-            item.setTitle("title data ke : " + i);
-            item.setDescription("deskripsi data ke " + i);
-            item.setCreated_at(DateSetting.timestamp());
-            item.setUpdated_at(DateSetting.timestamp());
+                item.setTitle(data.getName());
+                item.setImage_category(data.getImage());
+                item.setType_category(data.getType());
+                item.setId_user_category(0);
+                item.setCreated_at(DateSetting.timestamp());
+                item.setUpdated_at(DateSetting.timestamp());
 
-            categoryRepository.save(item);
+                categoryRepository.save(item);
+            }
+        } else {
+            isError(MsgState.FAILED);
         }
 
-        status.setStatus(200);
-        status.setMessage("Success Create Data");
+        return response;
+    }
 
-        return status;
+    private List<CategoryData> listDataCreateCategory() {
+
+        List<CategoryData> item = new ArrayList<>();
+
+        item.add(new CategoryData("Hiburan", "ic_accoustic_guitar", SPEND_TYPE));
+        item.add(new CategoryData("Penginapan", "ic_bed", SPEND_TYPE));
+        item.add(new CategoryData("Belanja", "ic_belanja", SPEND_TYPE));
+        item.add(new CategoryData("Kendaraan", "ic_car", SPEND_TYPE));
+        item.add(new CategoryData("Peliharaan", "ic_cat", SPEND_TYPE));
+        item.add(new CategoryData("Kopi", "ic_coffee", SPEND_TYPE));
+        item.add(new CategoryData("Makanan", "ic_eat", SPEND_TYPE));
+        item.add(new CategoryData("Keluarga", "ic_family", SPEND_TYPE));
+        item.add(new CategoryData("Hiburan", "ic_game", SPEND_TYPE));
+        item.add(new CategoryData("Pakaian", "ic_hanger", SPEND_TYPE));
+        item.add(new CategoryData("Rumah", "ic_house", SPEND_TYPE));
+        item.add(new CategoryData("Elektronik", "ic_laptop", SPEND_TYPE));
+        item.add(new CategoryData("Kesehatan", "ic_medical", SPEND_TYPE));
+        item.add(new CategoryData("Minuman", "ic_milkshake", SPEND_TYPE));
+        item.add(new CategoryData("Buku", "ic_open_book", SPEND_TYPE));
+        item.add(new CategoryData("Sedekah", "ic_payment", SPEND_TYPE));
+        item.add(new CategoryData("Tanaman", "ic_plant", SPEND_TYPE));
+        item.add(new CategoryData("Motor", "ic_scooter", SPEND_TYPE));
+        item.add(new CategoryData("Belanja", "ic_shopping_bag", SPEND_TYPE));
+        item.add(new CategoryData("Furnitur", "ic_sofa", SPEND_TYPE));
+        item.add(new CategoryData("Persewaan", "ic_store", SPEND_TYPE));
+        item.add(new CategoryData("Pajak", "ic_tax", SPEND_TYPE));
+        item.add(new CategoryData("Tiket", "ic_ticket", SPEND_TYPE));
+        item.add(new CategoryData("Pendidikan", "ic_toga", SPEND_TYPE));
+        item.add(new CategoryData("Peralatan", "ic_utilities", SPEND_TYPE));
+
+        item.add(new CategoryData("Gaji", "ic_money", INCOME_TYPE));
+        item.add(new CategoryData("Penjualan", "ic_payment", INCOME_TYPE));
+        item.add(new CategoryData("Persewaan", "ic_store", INCOME_TYPE));
+        item.add(new CategoryData("Hadiah", "ic_trophy", INCOME_TYPE));
+
+
+        return item;
+    }
+
+    private void isLog(String message) {
+        Util.log(TAG, message);
+    }
+
+    private void isError(String message) {
+        throw new MessageException(message);
+    }
+    private void isAccountUsedException(String message) {
+        throw new AccountUsedException(message);
     }
 
 }

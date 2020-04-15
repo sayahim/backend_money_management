@@ -1,17 +1,26 @@
 package com.himorfosis.moneymanagement.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 
 @Entity
 @Table(name = "category")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
-public class CategoryEntity {
+public class CategoryEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +34,12 @@ public class CategoryEntity {
     private String image_category_url;
     private Timestamp created_at;
     private Timestamp updated_at;
+//    @OneToOne(mappedBy = "category")
+//    private FinancialEntity financials;
+
+    public CategoryEntity() {
+
+    }
 
     public Long getId() {
         return id;
@@ -97,4 +112,12 @@ public class CategoryEntity {
     public void setId_user_category(Integer id_user_category) {
         this.id_user_category = id_user_category;
     }
+
+//    public FinancialEntity getFinancials() {
+//        return financials;
+//    }
+//
+//    public void setFinancials(FinancialEntity financials) {
+//        this.financials = financials;
+//    }
 }

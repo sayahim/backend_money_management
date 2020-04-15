@@ -23,15 +23,13 @@ public class JwtSecurityDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
 
-        isLog("joss...");
-        UsersEntity user = usersRepository.findByUsername(s);
-        isLog("user : " + user);
+        UsersEntity user = usersRepository.findByEmail(s);
 
         if (user == null) {
-            isLog("User not found with username = " + s);
-            throw new UsernameNotFoundException("User not found with username: " + s);
+            isLog("User not found with email = " + s);
+            throw new UsernameNotFoundException("User not found with email: " + s);
         }
-        return new User(user.getUsername(), user.getPassword(),
+        return new User(user.getEmail(), user.getPassword(),
                 new ArrayList<>());
     }
 

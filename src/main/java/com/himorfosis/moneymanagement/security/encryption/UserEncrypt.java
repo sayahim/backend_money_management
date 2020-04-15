@@ -38,7 +38,7 @@ public class UserEncrypt {
 
             String codeId = Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
 //            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
-            return codeId.substring(codeId.length() - 2);
+            return codeId.substring(0, codeId.length() - 2);
         } catch (Exception e) {
             System.out.println("Error while encrypting: " + e.toString());
         }

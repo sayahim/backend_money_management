@@ -1,16 +1,24 @@
 package com.himorfosis.moneymanagement.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "financials")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
-public class FinancialEntity {
+public class FinancialEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +31,38 @@ public class FinancialEntity {
     private String note;
     private Timestamp created_at;
     private Timestamp updated_at;
+    //    @OneToMany(cascade = CascadeType.ALL)
+//    @ManyToOne(targetEntity = CategoryEntity.class, cascade = CascadeType.ALL)
+//    @ManyToOne(targetEntity = CategoryEntity.class, cascade = CascadeType.ALL)
+//    @JoinColumn(name = "id_category", insertable = false, updatable = false)
+//    @RestResource(path = "libraryAddress", rel="address")
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_category", insertable = false, updatable = false)
+    private CategoryEntity category;
+//    @OneToMany(targetEntity= CategoryEntity.class, mappedBy="id_category",cascade=CascadeType.ALL, fetch = FetchType.LAZY) , referencedColumnName = "id", insertable = false, updatable = false
+//    private List<CategoryEntity> category;
+
+
+//    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+//    @JoinTable(name = "tten_courseservice_course_program_table", joinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"), inverseJoinColumns = @JoinColumn(name = "program_id", referencedColumnName = "program_id"))
+//    @ForeignKey(name="fk_tten_courseservice_course_table_course_id",inverseName="fk_tten_courseservice_program_table_program_id")
+//    private List<ProgramEntity> programs;``
+
+//    private List<CategoryEntity> category;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "id", referencedColumnName = "id")
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "id")
+
+    public FinancialEntity() {
+    }
+
+//    @ManyToOne
+//    private CategoryEntity category;
+//    @OneToMany(targetEntity = CategoryEntity.class, mappedBy = "id_category", orphanRemoval = false, fetch = FetchType.LAZY)
+//    private Set<CategoryEntity> category;
 
     public Long getId() {
         return id;
@@ -96,5 +136,27 @@ public class FinancialEntity {
         this.updated_at = updated_at;
     }
 
+    public CategoryEntity getCategory() {
+        return category;
+    }
 
+    public void setCategory(CategoryEntity category) {
+        this.category = category;
+    }
+
+//    public CategoryEntity getCategorySecond() {
+//        return categorySecond;
+//    }
+//
+//    public void setCategorySecond(CategoryEntity categorySecond) {
+//        this.categorySecond = categorySecond;
+//    }
+
+//    public List<CategoryEntity> getCategory() {
+//        return category;
+//    }
+//
+//    public void setCategory(List<CategoryEntity> category) {
+//        this.category = category;
+//    }
 }
