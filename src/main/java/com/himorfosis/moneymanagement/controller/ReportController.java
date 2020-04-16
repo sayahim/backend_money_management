@@ -8,6 +8,7 @@ import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.model.ReportCategoryResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.repository.ReportsRepository;
+import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import com.himorfosis.moneymanagement.security.encryption.UserEncrypt;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,6 @@ public class ReportController {
             String idUserGenerate = UserEncrypt.generateDecrypt(getUserId);
             String monthSelected = getDateToday.substring(0, 8);
 
-//            List<FinancialEntity> financialsData = new ArrayList<>();
             List<FinancialEntity> financeDatabase = reportsRepository.findReportCategoryFinanceUser(
                     idUserGenerate,
                     getTypeFinance,
@@ -84,49 +84,57 @@ public class ReportController {
                     getDateToday + TIME_END
             );
 
-//            financialsData.addAll(financeDatabase);
-
-            isLog("finance size : " + financeDatabase.size());
 
             // ini error
-            List<CategoryEntity> listCategory = categoryRepository.findCategoryUser("0", idUserGenerate);
+            List<CategoryEntity> listDataCategory = new ArrayList<>();
+            List<CategoryEntity> listCategory = categoryRepository.findCategoryUser(idUserGenerate);
+            List<CategoryEntity> listCategoryDefault = categoryRepository.findCategoryDefault("0");
 
-            isLog("category size : " + listCategory.size());
+            listDataCategory.addAll(listCategory);
+            listDataCategory.addAll(listCategoryDefault);
 
-            Integer totalPercentage = 0;
-            for (CategoryEntity data: listCategory) {
+            List<ReportCategoryResponse> responseData = new ArrayList<>();
 
-                List<FinancialEntity> listFinanceByDay = new ArrayList<>();
+            long totalNominalMax = 0;
+            boolean statusMaxValue = false;
+            for (CategoryEntity data: listDataCategory) {
 
-                long totalNominal = 0;
+                long totalNominalPerCategory = 0;
 
                 for (FinancialEntity item : financeDatabase) {
 
                     if(item.getCategory().getId() == data.getId()) {
-                        totalNominal += item.getNominal();
+                        totalNominalPerCategory += item.getNominal();
+                    }
 
+                    // check total maximal
+                    if (statusMaxValue == false) {
+                        totalNominalMax += item.getNominal();
                     }
 
                 }
 
-                if (totalNominal != 0) {
-                    isLog("category name : " + data.getTitle());
-                    isLog("total nominal : " + totalNominal);
+                if (totalNominalPerCategory != 0) {
+
+                    // count to get percent
+                    int totalPercentage = ((int) totalNominalPerCategory * 100) / (int) totalNominalMax;
+
+                    responseData.add(
+                            new ReportCategoryResponse(
+                                    Encryption.setEncrypt(data.getId().toString()),
+                                    data.getTitle(),
+                                    totalNominalPerCategory,
+                                    totalPercentage,
+                                    data.getImage_category_url()
+                                    ));
+
+                    statusMaxValue = true;
+
                 }
 
             }
 
-//            private String id;
-//            private String title;
-//            private long total_nominal;
-//            private Integer total_percentage;
-//            private String image_category_url;
-
-//            List<ReportFinanceCategoryDto> reportCategory = reportsRepository.fetchReportByCategory(
-//                    getUserId
-//            );
-//
-//            return reportCategory;
+            return responseData;
 
         }
         return null;

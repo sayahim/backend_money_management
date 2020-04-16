@@ -21,7 +21,10 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
     @Query(value = "SELECT * FROM category WHERE type_category =:getTypeCategory", nativeQuery = true)
     List<CategoryEntity> findByCategoryTypeFinance(@Param("getTypeCategory") String getTypeCategory);
 
-    @Query(value = "SELECT * FROM category WHERE id_user_category =:defaultCategory OR =:user_id", nativeQuery = true)
-    List<CategoryEntity> findCategoryUser(String defaultCategory, String user_id);
+    @Query(value = "SELECT * FROM category WHERE id_user_category  =:user_id", nativeQuery = true)
+    List<CategoryEntity> findCategoryUser(String user_id);
+
+    @Query(value = "SELECT * FROM category WHERE id_user_category =:defaultCategory", nativeQuery = true)
+    List<CategoryEntity> findCategoryDefault(String defaultCategory);
 
 }
