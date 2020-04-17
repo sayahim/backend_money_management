@@ -65,6 +65,7 @@ public class ReportController {
     ) throws ParseException {
 
         String getUserId = paramMap.getFirst("user_id");
+        String getDateStart = paramMap.getFirst("date_start");
         String getDateToday = paramMap.getFirst("date_today");
         String getTypeFinance = paramMap.getFirst("type_finance");
 
@@ -80,7 +81,7 @@ public class ReportController {
             List<FinancialEntity> financeDatabase = reportsRepository.findReportCategoryFinanceUser(
                     idUserGenerate,
                     getTypeFinance,
-                    monthSelected + "01" + TIME_START,
+                    getDateStart + TIME_START,
                     getDateToday + TIME_END
             );
 

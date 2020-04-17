@@ -40,6 +40,7 @@ public class HomepageController {
 
         String getUserId = paramMap.getFirst("user_id");
         String getDateToday = paramMap.getFirst("date_today");
+        String getDateStart = paramMap.getFirst("date_start");
 
         if (getUserId == null || getDateToday == null) {
             isBadRequest();
@@ -57,7 +58,7 @@ public class HomepageController {
 
             List<FinancialEntity> financeDatabase = financialsRepository.findFinanceUsers(
                     idUserGenerate,
-                    monthSelectedStart + "01" + TIME_START,
+                    getDateStart + TIME_START,
                     getDateToday + TIME_END
             );
 
