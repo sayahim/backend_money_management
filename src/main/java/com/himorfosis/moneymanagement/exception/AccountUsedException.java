@@ -9,5 +9,4 @@ public class AccountUsedException extends RuntimeException {
     public AccountUsedException(String message) {
         super(message + " Has Been Used");
     }
-
 }

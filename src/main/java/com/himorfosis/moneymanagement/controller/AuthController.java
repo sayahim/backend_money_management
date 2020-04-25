@@ -2,9 +2,6 @@ package com.himorfosis.moneymanagement.controller;
 
 import com.himorfosis.moneymanagement.entity.UsersEntity;
 import com.himorfosis.moneymanagement.exception.*;
-import com.himorfosis.moneymanagement.model.AuthenticateResponse;
-import com.himorfosis.moneymanagement.model.JwtRequest;
-import com.himorfosis.moneymanagement.model.ResponseStatus;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.model.UserResponse;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
@@ -24,12 +21,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin
@@ -192,7 +185,7 @@ public class AuthController {
         String userId = UserEncrypt.generateDecrypt(getUserId);
         isLog(UserEncrypt.generateDecrypt(getUserId));
         UsersEntity item = usersRepo.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new ResourceNotFoundException(getUserId));
+                .orElseThrow(() -> new DataNotFoundException(getUserId));
 
         // response data
         UsersEntity update = new UsersEntity();

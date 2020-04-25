@@ -43,22 +43,6 @@ public class ReportController {
     CategoryRepository categoryRepository;
 
 
-    private void isLog(String message) {
-        Util.log(TAG, message);
-    }
-
-    private void isError(String message) {
-        throw new MessageException(message);
-    }
-
-    private void isBadRequest() {
-        throw new DataNotCompleteException();
-    }
-
-    private void isNotAvailable() {
-        throw new DataNotAvailableException();
-    }
-
     @PostMapping(value = "report_category", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public List<ReportCategoryResponse> reportCategory(
             @RequestParam MultiValueMap<String, String> paramMap
@@ -142,6 +126,54 @@ public class ReportController {
 
     }
 
+    @PostMapping(value = "report_category_detail", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> reportCategoryDetail(
+            @RequestParam MultiValueMap<String, String> paramMap
+    ) throws ParseException {
+
+        String getUserId = paramMap.getFirst("user_id");
+        String getDateStart = paramMap.getFirst("date_start");
+        String getDateToday = paramMap.getFirst("date_today");
+        String getIdCategory = paramMap.getFirst("id_category");
+
+        isLog("report start...");
+        if (getUserId == null) {
+            isBadRequest();
+        } else {
+
+//            String idUserGenerate = UserEncrypt.generateDecrypt(getUserId);
+//            String monthSelected = getDateToday.substring(0, 8);
+            isLog("desc user id : " + UserEncrypt.generateDecrypt(getUserId));
+            isLog("desc cat id : " + Encryption.getDecrypt(getIdCategory));
+
+            List<FinancialEntity> financeDatabase = reportsRepository.findReportCategoryDetailFinanceUser(
+                    UserEncrypt.generateDecrypt(getUserId),
+                    Encryption.getDecrypt(getIdCategory),
+                    getDateStart + TIME_START,
+                    getDateToday + TIME_END
+            );
+            isLog("list detail report category size : " + financeDatabase.size());
+
+            return new ResponseEntity<>(financeDatabase, HttpStatus.OK);
+        }
+
+        return null;
+    }
+
+    private void isLog(String message) {
+        Util.log(TAG, message);
+    }
+
+    private void isError(String message) {
+        throw new MessageException(message);
+    }
+
+    private void isBadRequest() {
+        throw new DataNotCompleteException();
+    }
+    private void isNotAvailable() {
+        throw new DataNotAvailableException();
+    }
 
 
 }

@@ -27,10 +27,18 @@ public interface ReportsRepository extends JpaRepository<FinancialEntity, Long> 
             @Param("dateFinish") String dateEnd);
 
     @Query(value = "SELECT * FROM financials WHERE id_user =:userId AND type_financial =:typeFinance " +
-            "AND updated_at BETWEEN :dateStart AND :dateEnd", nativeQuery = true)
+            "AND updated_at BETWEEN :dateStart AND :dateEnd ORDER BY updated_at DESC", nativeQuery = true)
     List<FinancialEntity> findReportCategoryFinanceUser(
             @Param("userId") String userId,
             @Param("typeFinance") String typeFinance,
+            @Param("dateStart") String dateStart,
+            @Param("dateEnd") String dateEnd);
+
+    @Query(value = "SELECT * FROM financials WHERE id_user =:userId AND id_category =:idCategory " +
+            "AND updated_at BETWEEN :dateStart AND :dateEnd ORDER BY updated_at DESC", nativeQuery = true)
+    List<FinancialEntity> findReportCategoryDetailFinanceUser(
+            @Param("userId") String userId,
+            @Param("idCategory") String idCategory,
             @Param("dateStart") String dateStart,
             @Param("dateEnd") String dateEnd);
 

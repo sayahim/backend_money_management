@@ -14,6 +14,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 @Configuration
 @EnableWebSecurity
@@ -61,11 +63,32 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/category/all").permitAll()
                 .antMatchers("/api/category/createPrivateAdm").permitAll()
                 .antMatchers("/api/category/type_finance/").permitAll()
+                .antMatchers("/api/assets/all").permitAll()
+                .antMatchers("/api/assets/all/").permitAll()
+                .antMatchers("/api/assets/createAssets").permitAll()
+                .antMatchers("/api/assets/createAssetCategory").permitAll()
+                .antMatchers("/api/images/").permitAll()
+                .antMatchers("/api/images/assets/").permitAll()
+                .antMatchers("/ImageStorageService/").permitAll()
+                .mvcMatchers(HttpMethod.GET, "/images/**").permitAll()
+                .mvcMatchers(HttpMethod.GET, "/images/assets/**").permitAll()
+//                .mvcMatchers(HttpMethod.GET, "resources/images/**").permitAll()
                 .anyRequest().authenticated().and().
                 exceptionHandling().authenticationEntryPoint(jwtAuthEntryPoint).and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
+    }
+
+
+    @Configuration
+    public class WebConfiguration extends WebMvcConfigurationSupport {
+
+        @Override
+        public void addResourceHandlers(ResourceHandlerRegistry registry){
+            registry.addResourceHandler("/**")
+                    .addResourceLocations("classpath:/images/");
+        }
     }
 
 }

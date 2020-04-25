@@ -27,15 +27,12 @@ public class CategoryEntity implements Serializable {
     private Long id;
     @NotBlank
     private String title;
-    private String description;
     private String type_category;
     private String image_category;
     private Integer id_user_category;
     private String image_category_url;
     private Timestamp created_at;
     private Timestamp updated_at;
-//    @OneToOne(mappedBy = "category")
-//    private FinancialEntity financials;
 
     public CategoryEntity() {
 
@@ -47,14 +44,6 @@ public class CategoryEntity implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getImage_category() {

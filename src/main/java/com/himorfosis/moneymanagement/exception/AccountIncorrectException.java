@@ -8,7 +8,6 @@ public class AccountIncorrectException extends RuntimeException {
 
     public AccountIncorrectException() {
         super("Incorrect Email or Password. Please Try Again ");
-
     }
 
 }

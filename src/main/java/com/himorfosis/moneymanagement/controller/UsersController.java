@@ -1,7 +1,9 @@
 package com.himorfosis.moneymanagement.controller;
 
-import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
+import com.himorfosis.moneymanagement.exception.DataNotCompleteException;
+import com.himorfosis.moneymanagement.exception.DataNotFoundException;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
+import com.himorfosis.moneymanagement.exception.UnsupportedMediaTypeException;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.model.UserResponse;
 import com.himorfosis.moneymanagement.repository.AuthRepository;
@@ -65,7 +67,7 @@ public class UsersController {
         Util.log(TAG, decryptId);
 
         UsersEntity item = usersRepo.findById(Long.valueOf(decryptId))
-                .orElseThrow(() -> new ResourceNotFoundException(decryptId));
+                .orElseThrow(() -> new DataNotFoundException(decryptId));
 
         UserResponse data = new UserResponse(
                 Encryption.setEncrypt(String.valueOf(item.getId())),
@@ -106,9 +108,7 @@ public class UsersController {
             status.setMessage("Success Create Data");
         } else {
 
-            // set response callback
-            status.setStatus(200);
-            status.setMessage("Please complete the data");
+            isDataNotCompleted();
         }
 
         return status;
@@ -123,15 +123,12 @@ public class UsersController {
         StatusResponse status = new StatusResponse();
 
         if (getName.isEmpty() || getId.isEmpty() || getImage.isEmpty()) {
-
-            status.setStatus(500);
-            status.setMessage("Please complete the data");
-
+            isDataNotCompleted();
         } else {
 
             Long idUser = (Long.valueOf(UserEncrypt.generateEncrypt(getId)));
             UsersEntity users = usersRepo.findById(idUser)
-                    .orElseThrow(() -> new ResourceNotFoundException(getId));
+                    .orElseThrow(() -> new DataNotFoundException(getId));
 
             if (users != null) {
 
@@ -168,9 +165,7 @@ public class UsersController {
                         status.setMessage("Success Update Data");
 
                     } else {
-
-                        status.setStatus(415);
-                        status.setMessage("Data image must jpg or png");
+                        isUnsupportMediaType();
                     }
 
                 } else {
@@ -205,5 +200,12 @@ public class UsersController {
         return status;
     }
 
+    private void isDataNotCompleted() {
+         throw new DataNotCompleteException();
+    }
+
+    private void isUnsupportMediaType() {
+        throw new UnsupportedMediaTypeException();
+    }
 
 }

@@ -2,14 +2,12 @@ package com.himorfosis.moneymanagement.controller;
 
 import com.himorfosis.moneymanagement.entity.CategoryData;
 import com.himorfosis.moneymanagement.entity.CategoryEntity;
-import com.himorfosis.moneymanagement.exception.AccountUsedException;
-import com.himorfosis.moneymanagement.exception.MessageException;
-import com.himorfosis.moneymanagement.exception.ResourceNotFoundException;
+import com.himorfosis.moneymanagement.exception.*;
 import com.himorfosis.moneymanagement.key.DataKey;
 import com.himorfosis.moneymanagement.model.CategoryModel;
-import com.himorfosis.moneymanagement.model.ResponseStatus;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
+import com.himorfosis.moneymanagement.security.encryption.UserEncrypt;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.state.MsgState;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +53,6 @@ public class CategoryController {
             category.add(new CategoryModel(
                     Encryption.setEncrypt(String.valueOf(item.getId())),
                     item.getTitle(),
-                    item.getDescription(),
                     item.getType_category(),
                     item.getImage_category(),
                     item.getImage_category_url(),
@@ -78,10 +76,12 @@ public class CategoryController {
 
             List<CategoryEntity> listData = categoryRepository.findByCategoryTypeFinance(getTypeFinance);
             for (CategoryEntity item : listData) {
+
+                isLog("image url : " + item.getImage_category_url());
+                InputStream stream = getClass().getResourceAsStream("/com/baeldung/produceimage/image.jpg");
                 category.add(new CategoryModel(
                         Encryption.setEncrypt(String.valueOf(item.getId())),
                         item.getTitle(),
-                        item.getDescription(),
                         item.getType_category(),
                         item.getImage_category(),
                         item.getImage_category_url(),
@@ -113,7 +113,6 @@ public class CategoryController {
             category.add(new CategoryModel(
                     Encryption.setEncrypt(String.valueOf(item.getId())),
                     item.getTitle(),
-                    item.getDescription(),
                     item.getType_category(),
                     item.getImage_category(),
                     item.getImage_category_url(),
@@ -133,12 +132,11 @@ public class CategoryController {
         String getDescrypt = Encryption.getDecrypt(getId);
 
         CategoryEntity item = categoryRepository.findById(Long.valueOf(getDescrypt))
-                .orElseThrow(() -> new ResourceNotFoundException(getId));
+                .orElseThrow(() -> new DataNotFoundException(getId));
 
         CategoryModel data = new CategoryModel(
                 Encryption.setEncrypt(String.valueOf(item.getId())),
                 item.getTitle(),
-                item.getDescription(),
                 item.getType_category(),
                 item.getImage_category(),
                 item.getImage_category_url(),
@@ -146,6 +144,76 @@ public class CategoryController {
                 item.getUpdated_at());
 
         return new ResponseEntity<CategoryModel>(data, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/userCreate", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> categoryUserCreate(
+            @RequestParam MultiValueMap<String,String> paramMap) throws Exception {
+
+        String assets = paramMap.getFirst("assets");
+        String title = paramMap.getFirst("title");
+        String user_id = paramMap.getFirst("user_id");
+        String type_category = paramMap.getFirst("type_category");
+        String getUserId = UserEncrypt.generateDecrypt(user_id);
+
+        StatusResponse status = new StatusResponse();
+        CategoryEntity item = new CategoryEntity();
+
+        if (title.isEmpty()) {
+            isDataNotComplete();
+        } else {
+
+            item.setTitle(title);
+            item.setImage_category(assets);
+            item.setImage_category_url(imageStorageService.URL_ASSETS + assets);
+            item.setType_category(type_category);
+            item.setId_user_category(Integer.valueOf(getUserId));
+            item.setCreated_at(DateSetting.timestamp());
+            item.setUpdated_at(DateSetting.timestamp());
+            categoryRepository.save(item);
+
+        }
+
+        status.setStatus(200);
+        status.setMessage("Success Create Data");
+
+        return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/userUpdate", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> categoryUserUpdate(
+            @RequestParam MultiValueMap<String,String> paramMap) throws Exception {
+
+        String assets = paramMap.getFirst("assets");
+        String title = paramMap.getFirst("title");
+        String description = paramMap.getFirst("description");
+        String user_id = paramMap.getFirst("user_id");
+        String type_category = paramMap.getFirst("type_category");
+        String getUserId = UserEncrypt.generateDecrypt(user_id);
+
+        StatusResponse status = new StatusResponse();
+        CategoryEntity item = new CategoryEntity();
+
+        if (title.isEmpty() || description.isEmpty()) {
+            isDataNotComplete();
+        } else {
+
+            item.setId(Long.parseLong(user_id));
+            item.setTitle(title);
+            item.setImage_category(assets);
+            item.setImage_category_url(imageStorageService.URL_ASSETS + assets);
+            item.setType_category(type_category);
+            item.setId_user_category(Integer.valueOf(getUserId));
+            item.setCreated_at(DateSetting.timestamp());
+            item.setUpdated_at(DateSetting.timestamp());
+            categoryRepository.save(item);
+
+        }
+
+        status.setStatus(200);
+        status.setMessage("Success Update Data");
+
+        return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -161,9 +229,7 @@ public class CategoryController {
         CategoryEntity item = new CategoryEntity();
 
         if (getTitle.isEmpty() || getDescription.isEmpty()) {
-
-            status.setStatus(500);
-            status.setMessage("Please complete the data");
+            isDataNotComplete();
         } else {
 
             if (getImage != null) {
@@ -177,25 +243,21 @@ public class CategoryController {
                     String fileImageName = imageStorageService.uploadFile(getImage);
 
                     item.setTitle(getTitle);
-                    item.setDescription(getDescription);
                     item.setImage_category(fileImageName);
                     item.setType_category(getTypeCategory);
                     item.setId_user_category(Integer.valueOf(getUserId));
-                    item.setImage_category_url(imageStorageService.getLinkimage(fileImageName));
+                    item.setImage_category_url(imageStorageService.URL_ASSETS + fileImageName);
                     item.setCreated_at(DateSetting.timestamp());
                     item.setUpdated_at(DateSetting.timestamp());
 
                 } else {
-
-                    status.setStatus(415);
-                    status.setMessage("Data image must jpg or png");
+                    isUnsupportMediaType();
                 }
 
             } else {
 
                 // set data
                 item.setTitle(getTitle);
-                item.setDescription(getDescription);
                 item.setType_category(getTypeCategory);
                 item.setId_user_category(Integer.valueOf(getUserId));
                 item.setCreated_at(DateSetting.timestamp());
@@ -211,14 +273,6 @@ public class CategoryController {
         return status;
     }
 
-
-    //    @PostMapping(value = "login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-//    public ResponseEntity<?> login(
-//            @RequestParam MultiValueMap<String,String> paramMap) throws Exception {
-//
-//        String getEmail = paramMap.getFirst("email");
-//        String getPassword = paramMap.getFirst("password");
-
     @PutMapping(value = "update", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public StatusResponse categoryUpdate(
             @RequestParam MultiValueMap<String,String> paramMap,
@@ -232,16 +286,13 @@ public class CategoryController {
         StatusResponse status = new StatusResponse();
 
         if (getTitle.isEmpty() || getDescription.isEmpty()) {
-
-            status.setStatus(500);
-            status.setMessage("Please complete the data");
-
+            isDataNotComplete();
         } else {
 
             Long idUser = Long.valueOf(getId);
 
             CategoryEntity checkCategory = categoryRepository.findById(idUser)
-                    .orElseThrow(() -> new ResourceNotFoundException(idUser));
+                    .orElseThrow(() -> new DataNotFoundException(idUser));
 
             if (checkCategory != null) {
 
@@ -261,16 +312,13 @@ public class CategoryController {
 
                         update.setId(idUser);
                         update.setTitle(getTitle);
-                        update.setDescription(getDescription);
 
                         update.setImage_category(fileImageName);
-                        update.setImage_category_url(imageStorageService.getLinkimage(fileImageName));
+                        update.setImage_category_url(imageStorageService.URL_ASSETS + fileImageName);
                         update.setCreated_at(checkCategory.getCreated_at());
                         update.setUpdated_at(DateSetting.timestamp());
                     } else {
-
-                        status.setStatus(415);
-                        status.setMessage("Data image must jpg or png");
+                        isUnsupportMediaType();
                     }
 
                 } else {
@@ -278,7 +326,6 @@ public class CategoryController {
                     // update data tanpa gambar
                     update.setId(idUser);
                     update.setTitle(getTitle);
-                    update.setDescription(getDescription);
 
                     update.setImage_category(checkCategory.getImage_category());
                     update.setImage_category_url(checkCategory.getImage_category_url());
@@ -292,8 +339,10 @@ public class CategoryController {
                 status.setMessage("Success Update Data");
             } else {
 
-                status.setStatus(500);
-                status.setMessage("ID Category not found");
+                isError("ID Category not found");
+//
+//                status.setStatus(500);
+//                status.setMessage("ID Category not found");
             }
         }
 
@@ -306,13 +355,12 @@ public class CategoryController {
         System.out.println("category id : " + getId);
         Long id = Long.parseLong(Encryption.getDecrypt(getId));
 
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
+        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new DataNotFoundException(id));
         StatusResponse status = new StatusResponse();
 
         if (getId != null) {
 
             if (category.getImage_category() != null) {
-
                 // delete file image form directory
                 imageStorageService.deleteImage(category.getImage_category());
             }
@@ -323,10 +371,7 @@ public class CategoryController {
             status.setMessage("Success Deteled Data");
 
         } else {
-
-            // set response callback
-            status.setStatus(404);
-            status.setMessage("Data not available");
+            isError("Data not available");
         }
 
         return status;
@@ -405,8 +450,10 @@ public class CategoryController {
     private void isError(String message) {
         throw new MessageException(message);
     }
-    private void isAccountUsedException(String message) {
-        throw new AccountUsedException(message);
+    private void isUnsupportMediaType() {
+        throw new UnsupportedMediaTypeException();
     }
+    private void isDataNotComplete() { throw new DataNotCompleteException(); }
+
 
 }

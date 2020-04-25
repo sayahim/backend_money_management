@@ -12,7 +12,6 @@ public class FinancialsResponse {
     private Long nominal;
     private String note;
     private String title_category;
-    private String description_category;
     private String image_category_url;
     private Timestamp created_at;
     private Timestamp updated_at;
@@ -20,7 +19,7 @@ public class FinancialsResponse {
     public FinancialsResponse(
             String id, String id_category, String id_user, String code,
             String type_financial, Long nominal, String note,
-            String title_category,  String description_category, String image_category_url,
+            String title_category,  String image_category_url,
             Timestamp created_at, Timestamp updated_at ) {
 
         this.id = id;
@@ -31,7 +30,6 @@ public class FinancialsResponse {
         this.nominal = nominal;
         this.note = note;
         this.title_category = title_category;
-        this.description_category = description_category;
         this.image_category_url = image_category_url;
         this.created_at = created_at;
         this.updated_at = updated_at;
@@ -116,14 +114,6 @@ public class FinancialsResponse {
 
     public void setTitle_category(String title_category) {
         this.title_category = title_category;
-    }
-
-    public String getDescription_category() {
-        return description_category;
-    }
-
-    public void setDescription_category(String description_category) {
-        this.description_category = description_category;
     }
 
     public String getImage_category_url() {

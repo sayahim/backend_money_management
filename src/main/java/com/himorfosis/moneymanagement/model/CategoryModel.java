@@ -6,7 +6,6 @@ public class CategoryModel {
 
     private String id;
     private String title;
-    private String description;
     private String type_category;
     private String image_category;
     private String image_category_url;
@@ -14,11 +13,10 @@ public class CategoryModel {
     private Timestamp updated_at;
 
     public CategoryModel (
-            String id, String title, String description, String type_category, String image_category,
+            String id, String title, String type_category, String image_category,
             String image_category_url, Timestamp created_at, Timestamp updated_at) {
         this.id = id;
         this.title = title;
-        this.description = description;
         this.type_category = type_category;
         this.image_category = image_category;
         this.image_category_url = image_category_url;
@@ -40,14 +38,6 @@ public class CategoryModel {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getType_category() {

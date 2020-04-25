@@ -112,11 +112,13 @@ public class FileStorageService {
             if(resource.exists()) {
                 return resource;
             } else {
-                throw new FileNotFoundException("File not found " + fileName);
+                isFileNotFound();
             }
         } catch (MalformedURLException ex) {
             throw new FileNotFoundException("File not found " + fileName, ex);
         }
+
+        return null;
     }
 
     public Resource deleteFileAsResoruce(String fileName) {
@@ -136,12 +138,17 @@ public class FileStorageService {
 
                 return resource;
             } else {
-                throw new FileNotFoundException("File not found " + fileName);
+                isFileNotFound();
             }
         } catch (MalformedURLException ex) {
-            throw new FileNotFoundException("File not found " + fileName, ex);
+            isFileNotFound();
         }
 
+        return null;
+    }
+
+    private void isFileNotFound() {
+        throw new FileNotFoundException();
     }
 
 }

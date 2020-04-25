@@ -68,7 +68,6 @@ public class FinancialController {
                         item.getNominal(),
                         item.getNote(),
                         item.getCategory().getTitle(),
-                        item.getCategory().getDescription(),
                         item.getCategory().getImage_category_url(),
                         item.getCreated_at(),
                         item.getCreated_at())
@@ -156,7 +155,6 @@ public class FinancialController {
                                 item.getNominal(),
                                 item.getNote(),
                                 item.getCategory().getTitle(),
-                                item.getCategory().getDescription(),
                                 item.getCategory().getImage_category_url(),
                                 item.getCreated_at(),
                                 item.getCreated_at()
@@ -194,10 +192,10 @@ public class FinancialController {
             isLog("id user : " + idUser);
 
             UsersEntity userCheck = usersRepository.findById(idUser)
-                    .orElseThrow(() -> new ResourceNotFoundException(getIdUser));
+                    .orElseThrow(() -> new DataNotFoundException(getIdUser));
 
             CategoryEntity categoryCheck = categoryRepository.findById(Long.valueOf(idCategory))
-                    .orElseThrow(() -> new ResourceNotFoundException(getIdCategory));
+                    .orElseThrow(() -> new DataNotFoundException(getIdCategory));
 
             if (getTypeFinancials.equals("spend") || getTypeFinancials.equals("income")) {
 
@@ -238,7 +236,7 @@ public class FinancialController {
 
         String idDecrypt = Encryption.getDecrypt(getIdFinancial);
         FinancialEntity data = financialsRepository.findById(Long.valueOf(idDecrypt))
-                .orElseThrow(() -> new ResourceNotFoundException(idDecrypt));
+                .orElseThrow(() -> new DataNotFoundException(idDecrypt));
 
         if (data != null) {
             financialsRepository.delete(data);
@@ -254,15 +252,10 @@ public class FinancialController {
     private void isLog(String message) {
         Util.log(TAG, message);
     }
-
     private void isError(String message) {
         throw new MessageException(message);
     }
-
-    private void isBadRequest() {
-        throw new DataNotCompleteException();
-    }
-
+    private void isBadRequest() { throw new DataNotCompleteException(); }
     private void isNotAvailable() {
         throw new DataNotAvailableException();
     }

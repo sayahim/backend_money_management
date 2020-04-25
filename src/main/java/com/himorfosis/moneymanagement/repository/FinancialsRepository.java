@@ -13,7 +13,7 @@ public interface FinancialsRepository extends JpaRepository<FinancialEntity, Lon
     List<FinancialEntity> findAllFinancialUsers(
             String userId);
 
-    @Query(value = "SELECT * FROM financials WHERE id_user =:userId AND updated_at BETWEEN :dateStart AND :dateFinish", nativeQuery = true)
+    @Query(value = "SELECT * FROM financials WHERE id_user =:userId AND updated_at BETWEEN :dateStart AND :dateFinish ORDER BY updated_at DESC", nativeQuery = true)
     List<FinancialEntity> findFinanceUsers(
             @Param("userId") String userId,
             @Param("dateStart") String dateStart,
