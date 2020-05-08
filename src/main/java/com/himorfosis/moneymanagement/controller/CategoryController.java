@@ -306,7 +306,9 @@ public class CategoryController {
                     if (typeFile.equals("jpg") || typeFile.equals("png")) {
 
                         // delete image form directory
-                        imageStorageService.deleteImage(checkCategory.getImage_category());
+                        if (checkCategory.getImage_category() != null) {
+                            imageStorageService.deleteImage(checkCategory.getImage_category());
+                        }
                         // save image
                         String fileImageName = imageStorageService.uploadFile(getImage);
 

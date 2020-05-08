@@ -9,6 +9,7 @@ public class ImageStorageProperties {
 
     private String uploadImage;
     private String uploadImageAssets;
+    private String uploadImageProfile;
 
     public String getUploadImage() {
         return uploadImage;
@@ -24,5 +25,13 @@ public class ImageStorageProperties {
 
     public void setUploadImageAssets(String uploadImageAssets) {
         this.uploadImageAssets = uploadImageAssets;
+    }
+
+    public String getUploadImageProfile() {
+        return uploadImageProfile;
+    }
+
+    public void setUploadImageProfile(String uploadImageProfile) {
+        this.uploadImageProfile = uploadImageProfile;
     }
 }

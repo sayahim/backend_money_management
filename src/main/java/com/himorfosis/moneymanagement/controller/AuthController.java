@@ -29,16 +29,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/")
 public class AuthController {
 
-    // update password
-    // register
-    // login
-
     private String TAG = "AuthController";
 
     @Autowired
     UsersRepository usersRepo;
-    @Autowired
-    ImageStorageService imageStorageService;
     @Autowired
     private JwtSecurityToken jwtSecurityToken;
     @Autowired
@@ -141,6 +135,9 @@ public class AuthController {
                             item.getName(),
                             item.getEmail(),
                             item.getPhone_number(),
+                            item.getBorn(),
+                            item.getGender(),
+                            item.getImage_url(),
                             item.getImage(),
                             token,
                             item.getActive(),

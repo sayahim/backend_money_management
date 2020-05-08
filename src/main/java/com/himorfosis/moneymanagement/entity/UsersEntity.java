@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -19,7 +19,10 @@ public class UsersEntity {
     private String name;
     private String email;
     private String phone_number;
+    private Date born;
+    private String gender;
     private String image;
+    private String image_url;
     private String password;
     private String token;
     private Integer active;
@@ -106,4 +109,27 @@ public class UsersEntity {
         this.updated_at = updated_at;
     }
 
+    public Date getBorn() {
+        return born;
+    }
+
+    public void setBorn(Date born) {
+        this.born = born;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getImage_url() {
+        return image_url;
+    }
+
+    public void setImage_url(String image_url) {
+        this.image_url = image_url;
+    }
 }

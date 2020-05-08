@@ -48,6 +48,35 @@ public class ImagesController {
         return null;
     }
 
+    @GetMapping("/images/profile")
+    @ResponseBody
+    public ResponseEntity<byte[]> getImagesProfile(@RequestParam String name) throws IOException {
+
+        isLog("file name : " + name);
+
+        ClassPathResource img = new ClassPathResource("images/profile/" + name);
+        byte[] dataImage = StreamUtils.copyToByteArray(img.getInputStream());
+        String typeFile = name.substring(name.length() -3, name.length());
+
+        isLog("typeFile : " + typeFile);
+
+        if (typeFile.equals("jpg")) {
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(dataImage);
+        } else if (typeFile.equals("png")) {
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(dataImage);
+        } else {
+            new DataNotAvailableException();
+        }
+
+        return null;
+    }
+
     @GetMapping("/images")
     @ResponseBody
     public ResponseEntity<byte[]> getImage(@RequestParam String name) throws IOException {

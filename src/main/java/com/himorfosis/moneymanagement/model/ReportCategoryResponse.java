@@ -4,13 +4,13 @@ public class ReportCategoryResponse {
 
     private String id;
     private String title;
-    private long total_nominal;
-    private Integer total_percentage;
+    private Long total_nominal;
+    private Long total_percentage;
     private String image_category_url;
 
     public ReportCategoryResponse(
-            String id, String title, long total_nominal,
-            Integer total_percentage, String image_category_url) {
+            String id, String title, Long total_nominal,
+            Long total_percentage, String image_category_url) {
 
         this.id = id;
         this.title = title;
@@ -40,15 +40,15 @@ public class ReportCategoryResponse {
         return total_nominal;
     }
 
-    public void setTotal_nominal(long total_nominal) {
+    public void setTotal_nominal(Long total_nominal) {
         this.total_nominal = total_nominal;
     }
 
-    public Integer getTotal_percentage() {
+    public Long getTotal_percentage() {
         return total_percentage;
     }
 
-    public void setTotal_percentage(Integer total_percentage) {
+    public void setTotal_percentage(Long total_percentage) {
         this.total_percentage = total_percentage;
     }
 

@@ -2,6 +2,7 @@ package com.himorfosis.moneymanagement.repository;
 
 import com.himorfosis.moneymanagement.entity.FinancialEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,7 +14,7 @@ public interface FinancialsRepository extends JpaRepository<FinancialEntity, Lon
     List<FinancialEntity> findAllFinancialUsers(
             String userId);
 
-    @Query(value = "SELECT * FROM financials WHERE id_user =:userId AND updated_at BETWEEN :dateStart AND :dateFinish ORDER BY updated_at DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM financials WHERE id_user =:userId AND updated_at BETWEEN :dateStart AND :dateFinish", nativeQuery = true)
     List<FinancialEntity> findFinanceUsers(
             @Param("userId") String userId,
             @Param("dateStart") String dateStart,
@@ -29,6 +30,10 @@ public interface FinancialsRepository extends JpaRepository<FinancialEntity, Lon
             @Param("dateEnd")String dateFinish);
 
 
+//@Modifying
+//@Query("delete from Fruit f where f.name=:name or f.color=:color")
+//List<int> deleteFruits(@Param("name") String name, @Param("color") String color);
+
 
 //    Long id, Long id_category, Long id_user, String code, String type_financial, Long nominal,String note,
 //    Timestamp created_at, Timestamp updated_at,String title, String description, String type_category,
@@ -39,8 +44,6 @@ public interface FinancialsRepository extends JpaRepository<FinancialEntity, Lon
 //    List<JoinDto> fetchDataInnerJoin();
 
 //    SELECT d.name, e.name, e.email, e.address FROM department d INNER JOIN employee e ON d.id = e.dept_id;
-
-
 
 
 }

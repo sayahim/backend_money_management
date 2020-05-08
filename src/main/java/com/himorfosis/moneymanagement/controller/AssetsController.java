@@ -7,6 +7,7 @@ import com.himorfosis.moneymanagement.exception.AccountUsedException;
 import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.model.CategoryModel;
 import com.himorfosis.moneymanagement.model.StatusResponse;
+import com.himorfosis.moneymanagement.model.response.AssetsCategoryResponse;
 import com.himorfosis.moneymanagement.model.response.AssetsResponse;
 import com.himorfosis.moneymanagement.repository.AssetsCategoryRepository;
 import com.himorfosis.moneymanagement.repository.AssetsRepository;
@@ -58,6 +59,22 @@ public class AssetsController {
                         listAssets));
             }
 
+        }
+
+        return assetsResponses;
+    }
+
+    @GetMapping("/category_assets")
+    public List<AssetsCategoryResponse> categoryAssets() {
+
+        List<AssetsCategoryResponse> assetsResponses = new ArrayList<>();
+        List<AssetsCategoryEntity> listCategoryAssets = assetsCategroyRepo.findAll();
+
+        for (AssetsCategoryEntity item : listCategoryAssets) {
+                assetsResponses.add(new AssetsCategoryResponse(
+                        Encryption.setEncrypt(item.getId().toString()),
+                        item.getTitle()
+                ));
         }
 
         return assetsResponses;

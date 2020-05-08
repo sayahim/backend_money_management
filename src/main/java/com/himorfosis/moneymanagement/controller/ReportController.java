@@ -6,10 +6,12 @@ import com.himorfosis.moneymanagement.exception.DataNotAvailableException;
 import com.himorfosis.moneymanagement.exception.DataNotCompleteException;
 import com.himorfosis.moneymanagement.exception.MessageException;
 import com.himorfosis.moneymanagement.model.ReportCategoryResponse;
+import com.himorfosis.moneymanagement.model.response.ReportDetailResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
 import com.himorfosis.moneymanagement.repository.ReportsRepository;
 import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import com.himorfosis.moneymanagement.security.encryption.UserEncrypt;
+import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -72,7 +74,7 @@ public class ReportController {
 
             // ini error
             List<CategoryEntity> listDataCategory = new ArrayList<>();
-            List<CategoryEntity> listCategory = categoryRepository.findCategoryUser(idUserGenerate);
+            List<CategoryEntity> listCategory = categoryRepository.findCategoryUser(idUserGenerate, getTypeFinance);
             List<CategoryEntity> listCategoryDefault = categoryRepository.findCategoryDefault("0");
 
             listDataCategory.addAll(listCategory);
@@ -88,8 +90,17 @@ public class ReportController {
 
                 for (FinancialEntity item : financeDatabase) {
 
-                    if(item.getCategory().getId() == data.getId()) {
-                        totalNominalPerCategory += item.getNominal();
+                    if (item.getCategory() == null) {
+                        CategoryEntity category = categoryRepository.fetchCategoryItem(item.getId_category().toString());
+                        if(category.getId() == data.getId()) {
+                            if (getTypeFinance.equals(category.getType_category())) {
+                                totalNominalPerCategory += item.getNominal();
+                            }
+                        }
+                    } else  {
+                        if(item.getCategory().getId() == data.getId()) {
+                            totalNominalPerCategory += item.getNominal();
+                        }
                     }
 
                     // check total maximal
@@ -102,14 +113,16 @@ public class ReportController {
                 if (totalNominalPerCategory != 0) {
 
                     // count to get percent
-                    int totalPercentage = ((int) totalNominalPerCategory * 100) / (int) totalNominalMax;
+                    Long totalNominalCategory = totalNominalPerCategory * 100;
+                    Long totalValue = totalNominalCategory / totalNominalMax;
+//                    Long totalPercentage = ((Long) totalNominalPerCategory * 100) / (Long) totalNominalMax;
 
                     responseData.add(
                             new ReportCategoryResponse(
                                     Encryption.setEncrypt(data.getId().toString()),
                                     data.getTitle(),
                                     totalNominalPerCategory,
-                                    totalPercentage,
+                                    totalValue,
                                     data.getImage_category_url()
                                     ));
 
@@ -141,10 +154,14 @@ public class ReportController {
             isBadRequest();
         } else {
 
-//            String idUserGenerate = UserEncrypt.generateDecrypt(getUserId);
-//            String monthSelected = getDateToday.substring(0, 8);
+            List<ReportDetailResponse.ReportDay> reportDay = new ArrayList<>();
+            List<ReportDetailResponse.Data> data = new ArrayList<>();
+            String dateMax = getDateToday.substring(8, 10);
+
             isLog("desc user id : " + UserEncrypt.generateDecrypt(getUserId));
             isLog("desc cat id : " + Encryption.getDecrypt(getIdCategory));
+            isLog("getDateStart : " + getDateStart + TIME_START);
+            isLog("getDateToday : " + getDateToday + TIME_END);
 
             List<FinancialEntity> financeDatabase = reportsRepository.findReportCategoryDetailFinanceUser(
                     UserEncrypt.generateDecrypt(getUserId),
@@ -152,9 +169,54 @@ public class ReportController {
                     getDateStart + TIME_START,
                     getDateToday + TIME_END
             );
-            isLog("list detail report category size : " + financeDatabase.size());
 
-            return new ResponseEntity<>(financeDatabase, HttpStatus.OK);
+            long totalNominalReport = 0;
+            for (FinancialEntity it : financeDatabase) {
+                totalNominalReport += it.getNominal();
+
+                if (it.getId_category() == Long.valueOf(Encryption.getDecrypt(getIdCategory))) {
+
+                    CategoryEntity category = categoryRepository.fetchCategoryItem(Encryption.getDecrypt(getIdCategory));
+                    data.add(new ReportDetailResponse.Data(
+                            Encryption.setEncrypt(it.getId().toString()), Encryption.setEncrypt(it.getId_category().toString())
+                            , it.getType_financial(), it.getNominal(), it.getNote(), it.getCreated_at(),
+                            category.getTitle(), category.getImage_category(), category.getImage_category_url()
+                    ));
+                }
+
+            }
+
+            for (int i = 0; i < Integer.parseInt(dateMax); i++) {
+                int itDay = i+1;
+                String day;
+                if (itDay < 10) {
+                    day = "0" + itDay;
+                } else {
+                    day = String.valueOf(itDay);
+                }
+
+                long totalNominalDay = 0;
+                for (FinancialEntity item: financeDatabase) {
+                    String monthSelected = item.getUpdated_at().toString().substring(0, 8);
+                    String dateSelected = item.getUpdated_at().toString().substring(0, 10);
+//                    isLog("=======================");
+//                    isLog("date now : " + monthSelected + day);
+//                    isLog("date : " + item.getUpdated_at());
+                    if (dateSelected.equals(monthSelected + day)) {
+                        isLog("it same");
+                        totalNominalDay += item.getNominal();
+                    }
+                }
+
+                if (totalNominalDay != 0) {
+                    Long totalPercentage = ((Long) totalNominalDay * 100) / (Long) totalNominalReport;
+                    reportDay.add(new ReportDetailResponse.ReportDay(itDay, totalNominalDay, totalPercentage));
+                }
+
+            }
+
+            ReportDetailResponse response = new ReportDetailResponse(totalNominalReport, reportDay, data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         return null;

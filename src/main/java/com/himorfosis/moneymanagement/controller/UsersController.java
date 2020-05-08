@@ -1,5 +1,6 @@
 package com.himorfosis.moneymanagement.controller;
 
+import com.himorfosis.moneymanagement.exception.BadRequestMessageException;
 import com.himorfosis.moneymanagement.exception.DataNotCompleteException;
 import com.himorfosis.moneymanagement.exception.DataNotFoundException;
 import com.himorfosis.moneymanagement.entity.UsersEntity;
@@ -10,8 +11,8 @@ import com.himorfosis.moneymanagement.repository.AuthRepository;
 import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.security.encryption.UserEncrypt;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
+import com.himorfosis.moneymanagement.service.ProfileStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
-import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +33,7 @@ public class UsersController {
     @Autowired
     UsersRepository usersRepo;
     @Autowired
-    ImageStorageService imageStorageService;
+    ProfileStorageService profileStorageService;
     @Autowired
     AuthRepository authRepo;
 
@@ -48,6 +50,9 @@ public class UsersController {
                     item.getName(),
                     item.getEmail(),
                     item.getPhone_number(),
+                    item.getBorn(),
+                    item.getGender(),
+                    item.getImage_url(),
                     item.getImage(),
                     item.getToken(),
                     item.getActive(),
@@ -63,17 +68,20 @@ public class UsersController {
     public UserResponse getDetailUsers(
             @RequestPart(value = "id", required = true) @Valid String getId) {
 
-        String decryptId = Encryption.getDecrypt(getId);
+        String decryptId = UserEncrypt.generateDecrypt(getId);
         Util.log(TAG, decryptId);
 
         UsersEntity item = usersRepo.findById(Long.valueOf(decryptId))
                 .orElseThrow(() -> new DataNotFoundException(decryptId));
 
         UserResponse data = new UserResponse(
-                Encryption.setEncrypt(String.valueOf(item.getId())),
+                UserEncrypt.generateDecrypt(String.valueOf(item.getId())),
                 item.getName(),
                 item.getEmail(),
                 item.getPhone_number(),
+                item.getBorn(),
+                item.getGender(),
+                item.getImage_url(),
                 item.getImage(),
                 item.getToken(),
                 item.getActive(),
@@ -107,53 +115,104 @@ public class UsersController {
             status.setStatus(200);
             status.setMessage("Success Create Data");
         } else {
-
             isDataNotCompleted();
         }
 
         return status;
     }
 
-    @PutMapping(value = "update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StatusResponse updateProfilUser(
-            @RequestPart(value = "id", required = true) @Valid String getId,
             @RequestPart(value = "image", required = false) MultipartFile getImage,
-            @RequestPart(value = "name", required = true) @Valid String getName) {
+            @RequestPart(value = "id", required = true) @Valid String getId,
+            @RequestPart(value = "name", required = true) @Valid String getName,
+            @RequestPart(value = "born", required = true) @Valid String getBorn,
+            @RequestPart(value = "gender", required = true) @Valid String getGender
+            ) {
 
         StatusResponse status = new StatusResponse();
 
-        if (getName.isEmpty() || getId.isEmpty() || getImage.isEmpty()) {
+        isLog("getId : " + getId);
+        isLog("getName :" + getName);
+        isLog("getBorn : " + getBorn);
+        isLog("getGender : " + getGender);
+
+        if (getName.isEmpty() || getId.isEmpty() || getGender.isEmpty() || getBorn.isEmpty()) {
             isDataNotCompleted();
         } else {
 
-            Long idUser = (Long.valueOf(UserEncrypt.generateEncrypt(getId)));
+            String decryptId = UserEncrypt.generateDecrypt(getId);
+            isLog("decryptId : " + decryptId);
+            Long idUser = (Long.valueOf(decryptId));
             UsersEntity users = usersRepo.findById(idUser)
                     .orElseThrow(() -> new DataNotFoundException(getId));
 
-            if (users != null) {
+            if (getGender.equals("L") || getGender.equals("P")) {
 
-                UsersEntity update = new UsersEntity();
+                if (users != null) {
+                    UsersEntity update = new UsersEntity();
 
-                if (!getImage.isEmpty()) {
+                    if (getImage != null) {
 
-                    // update dengan gambar
-                    String typeFile = imageStorageService.checkTypeFileImage(getImage);
+                        isLog("with image");
 
-                    if (typeFile.equals("jpg") || typeFile.equals("png")) {
+                        // update dengan gambar
+                        String typeFile = profileStorageService.checkTypeFileImage(getImage);
 
-                        // delete image form directory
-                        imageStorageService.deleteImage(users.getImage());
-                        // save image
-                        String fileImageName = imageStorageService.uploadFile(getImage);
+                        if (typeFile.equals("jpg") || typeFile.equals("png")) {
 
+                            // delete image form directory
+                            if (users.getImage() != null) {
+                                isLog("delete image");
+                                profileStorageService.deleteImage(users.getImage());
+                            }
+                            // save image
+                            String fileImageName = profileStorageService.uploadFile(getImage);
+                            isLog("save  image");
+                            isLog("file image : " + fileImageName);
+                            isLog("file image url : " + profileStorageService.URL_ASSETS + fileImageName);
+
+                            update.setId(idUser);
+                            update.setName(getName);
+                            update.setImage(fileImageName);
+                            update.setImage_url(profileStorageService.URL_ASSETS + fileImageName);
+
+                            // default data
+                            update.setEmail(users.getEmail());
+                            update.setPassword(users.getPassword());
+                            update.setPhone_number(users.getPhone_number());
+                            update.setToken(users.getToken());
+                            update.setBorn(DateSetting.convertStringToDateSql(getBorn));
+                            update.setGender(getGender);
+                            update.setActive(users.getActive());
+                            update.setCreated_at(users.getCreated_at());
+                            update.setUpdated_at(DateSetting.timestamp());
+
+                            usersRepo.save(update);
+
+                            status.setStatus(200);
+                            status.setMessage("Success Update Data");
+
+                        } else {
+                            isUnsupportMediaType();
+                        }
+
+                    } else {
+
+                        isLog("without image");
+
+
+                        // update data tanpa gambar
                         update.setId(idUser);
                         update.setName(getName);
-                        update.setImage(fileImageName);
+                        update.setImage(users.getImage());
 
                         // default data
                         update.setEmail(users.getEmail());
                         update.setPassword(users.getPassword());
                         update.setPhone_number(users.getPhone_number());
+                        update.setBorn(DateSetting.convertStringToDateSql(getBorn));
+                        update.setGender(getGender);
                         update.setToken(users.getToken());
                         update.setActive(users.getActive());
                         update.setCreated_at(users.getCreated_at());
@@ -163,41 +222,22 @@ public class UsersController {
 
                         status.setStatus(200);
                         status.setMessage("Success Update Data");
-
-                    } else {
-                        isUnsupportMediaType();
                     }
-
                 } else {
-
-                    // update data tanpa gambar
-
-                    update.setId(idUser);
-                    update.setName(getName);
-                    update.setImage(users.getImage());
-
-                    // default data
-                    update.setEmail(users.getEmail());
-                    update.setPassword(users.getPassword());
-                    update.setPhone_number(users.getPhone_number());
-                    update.setToken(users.getToken());
-                    update.setActive(users.getActive());
-                    update.setCreated_at(users.getCreated_at());
-                    update.setUpdated_at(DateSetting.timestamp());
-
-                    usersRepo.save(update);
-
-                    status.setStatus(200);
-                    status.setMessage("Success Update Data");
+                    isBadRequestMessageException("Wrong ID Category");
                 }
-            } else {
 
-                status.setStatus(500);
-                status.setMessage("ID Category not found");
+            } else {
+                isBadRequestMessageException("Wrong data type gender");
             }
+
         }
 
         return status;
+    }
+
+    private void isLog(String msg) {
+        Util.log(TAG, msg);
     }
 
     private void isDataNotCompleted() {
@@ -206,6 +246,10 @@ public class UsersController {
 
     private void isUnsupportMediaType() {
         throw new UnsupportedMediaTypeException();
+    }
+
+    private void isBadRequestMessageException(String msg) {
+        throw new BadRequestMessageException(msg);
     }
 
 }

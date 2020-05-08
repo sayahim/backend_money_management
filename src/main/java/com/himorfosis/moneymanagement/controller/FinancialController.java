@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,7 +82,7 @@ public class FinancialController {
 
         List<FinancialEntity> dataFinancials = financialsRepository.findAll();
 
-        for (FinancialEntity item: dataFinancials) {
+        for (FinancialEntity item : dataFinancials) {
             if (item != null) {
 //                isLog("title : " + item.getCategory().getTitle());
             }
@@ -94,8 +93,8 @@ public class FinancialController {
 
     @PostMapping(value = "/financialsUser", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public List<FinancialsResponse> findAllFinancialUsers(
-            @RequestParam MultiValueMap<String,String> paramMap
-            ) throws ParseException {
+            @RequestParam MultiValueMap<String, String> paramMap
+    ) throws ParseException {
 
         List<FinancialsResponse> listFinancials = new ArrayList<>();
 
@@ -170,13 +169,14 @@ public class FinancialController {
 
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<FinancialEntity> financialsCreate(
-            @RequestParam MultiValueMap<String,String> paramMap
+            @RequestParam MultiValueMap<String, String> paramMap
     ) {
         String getNote = paramMap.getFirst("note");
         String getIdCategory = paramMap.getFirst("id_category");
         String getIdUser = paramMap.getFirst("id_user");
         String getTypeFinancials = paramMap.getFirst("type_financial");
         String getNominal = paramMap.getFirst("nominal");
+        String date = paramMap.getFirst("date");
 
         FinancialEntity create = new FinancialEntity();
 
@@ -209,8 +209,8 @@ public class FinancialController {
                     create.setType_financial(getTypeFinancials);
 
                     create.setCode("FIN_" + DateSetting.generateNameByDateTime() + getIdCategory + getIdUser);
-                    create.setCreated_at(DateSetting.timestamp());
-                    create.setUpdated_at(DateSetting.timestamp());
+                    create.setCreated_at(DateSetting.generateDateToTimestamp(date));
+                    create.setUpdated_at(DateSetting.generateDateToTimestamp(date));
 
                     financialsRepository.save(create);
 
@@ -228,34 +228,98 @@ public class FinancialController {
         return null;
     }
 
-    @DeleteMapping(value = "delete/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public StatusResponse financialsDelete(
-            @RequestPart(value = "id", required = true) @Valid String getIdFinancial) {
+    @PostMapping(value = "/update", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<FinancialEntity> financialsUpdate(
+            @RequestParam MultiValueMap<String, String> paramMap
+    ) {
+        String getId = paramMap.getFirst("id");
+        String getNote = paramMap.getFirst("note");
+        String getIdCategory = paramMap.getFirst("id_category");
+        String getNominal = paramMap.getFirst("nominal");
+        String getDate = paramMap.getFirst("date");
+
+        FinancialEntity create = new FinancialEntity();
+
+        if (getNominal == null || getIdCategory == null || getId == null) {
+            isBadRequest();
+        } else {
+
+            Long idCategory = Long.valueOf(Encryption.getDecrypt(getIdCategory));
+            Long nominal = Long.valueOf(getNominal);
+
+            isLog("id cat : " + idCategory);
+
+            FinancialEntity data = financialsRepository.findById(Long.valueOf(getId))
+                    .orElseThrow(() -> new DataNotFoundException(getId));
+
+            CategoryEntity categoryCheck = categoryRepository.findById(Long.valueOf(idCategory))
+                    .orElseThrow(() -> new DataNotFoundException(getIdCategory));
+
+                if (data != null && categoryCheck != null) {
+
+                    // set data
+                    create.setId(Long.valueOf(getId));
+                    create.setId_category(idCategory);
+                    create.setId_user(data.getId_user());
+                    create.setNominal(nominal);
+                    create.setNote(getNote);
+                    create.setType_financial(data.getType_financial());
+
+                    create.setCode(data.getCode());
+                    create.setCreated_at(data.getCreated_at());
+                    create.setUpdated_at(DateSetting.timestamp());
+
+                    financialsRepository.save(create);
+
+                    Util.log(TAG, String.valueOf(create.getId()));
+
+                    return new ResponseEntity<>(create, HttpStatus.OK);
+                }
+
+
+        }
+
+        return null;
+    }
+
+    @PostMapping(value = "/delete", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> financialsDelete(
+            @RequestParam MultiValueMap<String, String> paramMap) throws ParseException {
+        String id = paramMap.getFirst("id");
 
         StatusResponse status = new StatusResponse();
 
-        String idDecrypt = Encryption.getDecrypt(getIdFinancial);
-        FinancialEntity data = financialsRepository.findById(Long.valueOf(idDecrypt))
-                .orElseThrow(() -> new DataNotFoundException(idDecrypt));
+        String getId = Encryption.getDecrypt(id);
+        Long idLong = Long.valueOf(getId);
+
+        FinancialEntity data = financialsRepository.findById(idLong)
+                .orElseThrow(() -> new DataNotFoundException(id));
 
         if (data != null) {
             financialsRepository.delete(data);
             status.setStatus(200);
             status.setMessage("Success Deteled Data");
+            return new ResponseEntity<>(status, HttpStatus.OK);
+
         } else {
             isNotAvailable();
         }
 
-        return status;
+        return null;
     }
 
     private void isLog(String message) {
         Util.log(TAG, message);
     }
+
     private void isError(String message) {
         throw new MessageException(message);
     }
-    private void isBadRequest() { throw new DataNotCompleteException(); }
+
+    private void isBadRequest() {
+        throw new DataNotCompleteException();
+    }
+
     private void isNotAvailable() {
         throw new DataNotAvailableException();
     }

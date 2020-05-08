@@ -1,6 +1,7 @@
 package com.himorfosis.moneymanagement.model;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class UserResponse {
 
@@ -8,13 +9,17 @@ public class UserResponse {
     private String name;
     private String email;
     private String phone_number;
+    private Date born;
+    private String gender;
     private String image;
+    private String image_url;
     private String token;
     private Integer active;
     private Timestamp created_at;
     private Timestamp updated_at;
 
     public UserResponse(String id, String name, String email, String phone_number,
+                        Date born, String gender, String image_url,
                         String image, String token, Integer active,
                         Timestamp created_at, Timestamp updated_at
                         ) {
@@ -22,7 +27,10 @@ public class UserResponse {
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
+        this.born = born;
+        this.gender = gender;
         this.image = image;
+        this.image_url = image_url;
         this.token = token;
         this.active = active;
         this.created_at = created_at;
@@ -103,4 +111,29 @@ public class UserResponse {
         this.updated_at = updated_at;
     }
 
+
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Date getBorn() {
+        return born;
+    }
+
+    public void setBorn(Date born) {
+        this.born = born;
+    }
+
+    public String getImage_url() {
+        return image_url;
+    }
+
+    public void setImage_url(String image_url) {
+        this.image_url = image_url;
+    }
 }

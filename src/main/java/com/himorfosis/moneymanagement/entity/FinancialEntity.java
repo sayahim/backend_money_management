@@ -31,14 +31,10 @@ public class FinancialEntity implements Serializable {
     private String note;
     private Timestamp created_at;
     private Timestamp updated_at;
-    //    @OneToMany(cascade = CascadeType.ALL)
-//    @ManyToOne(targetEntity = CategoryEntity.class, cascade = CascadeType.ALL)
-//    @ManyToOne(targetEntity = CategoryEntity.class, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "id_category", insertable = false, updatable = false)
-//    @RestResource(path = "libraryAddress", rel="address")
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_category", insertable = false, updatable = false)
+    @PrimaryKeyJoinColumn
     private CategoryEntity category;
 //    @OneToMany(targetEntity= CategoryEntity.class, mappedBy="id_category",cascade=CascadeType.ALL, fetch = FetchType.LAZY) , referencedColumnName = "id", insertable = false, updatable = false
 //    private List<CategoryEntity> category;
@@ -58,11 +54,6 @@ public class FinancialEntity implements Serializable {
 
     public FinancialEntity() {
     }
-
-//    @ManyToOne
-//    private CategoryEntity category;
-//    @OneToMany(targetEntity = CategoryEntity.class, mappedBy = "id_category", orphanRemoval = false, fetch = FetchType.LAZY)
-//    private Set<CategoryEntity> category;
 
     public Long getId() {
         return id;
@@ -144,19 +135,4 @@ public class FinancialEntity implements Serializable {
         this.category = category;
     }
 
-//    public CategoryEntity getCategorySecond() {
-//        return categorySecond;
-//    }
-//
-//    public void setCategorySecond(CategoryEntity categorySecond) {
-//        this.categorySecond = categorySecond;
-//    }
-
-//    public List<CategoryEntity> getCategory() {
-//        return category;
-//    }
-//
-//    public void setCategory(List<CategoryEntity> category) {
-//        this.category = category;
-//    }
 }

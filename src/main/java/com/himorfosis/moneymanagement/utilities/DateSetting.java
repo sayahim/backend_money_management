@@ -11,16 +11,8 @@ public class DateSetting {
 //    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
 
     public static Timestamp timestamp() {
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-
-        //method 1
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         System.out.println(timestamp);
-
-        //format timestamp
-        System.out.println(sdf.format(timestamp));
-
         return timestamp;
 
     }
@@ -41,9 +33,8 @@ public class DateSetting {
     public static String dateTimeGenerator() {
 
         LocalDateTime myDateObj = LocalDateTime.now();
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
         String formatted = myDateObj.format(myFormatObj);
-
         return formatted;
     }
 
@@ -52,23 +43,18 @@ public class DateSetting {
         LocalDateTime myDateObj = LocalDateTime.now();
         DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("ddMMyyyy_HHmmss");
         String formatted = myDateObj.format(myFormatObj);
-
         return formatted;
     }
 
-    public static Date convertStringToDate(String date) {
-
+    public static java.sql.Date convertStringToDateSql(String date) {
         try {
-
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd");
-            return formatter.parse(date);
-
+            Date formatter = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            java.sql.Date response = new java.sql.Date(formatter.getTime());
+            return response;
         } catch (Exception e) {
-
+            Util.log("convertStringToDateSql", e.getMessage());
         }
-
         return null;
-
     }
 
 }
