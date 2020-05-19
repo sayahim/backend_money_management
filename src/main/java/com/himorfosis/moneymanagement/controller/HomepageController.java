@@ -82,8 +82,8 @@ public class HomepageController {
 
                 for (FinancialEntity item : financeDatabase) {
 
-                    String dateSelected = item.getUpdated_at().toString().substring(0, 10);
-                    String monthSelected = item.getUpdated_at().toString().substring(0, 8);
+                    String dateSelected = item.getDate().toString().substring(0, 10);
+                    String monthSelected = item.getDate().toString().substring(0, 8);
 
                     int day = pos + 1;
                     String dateDay;
@@ -113,51 +113,12 @@ public class HomepageController {
                             listFinanceByDay.add(
                                     new HomepageResponse.Financial(
                                             Encryption.setEncrypt(item.getId().toString()), Encryption.setEncrypt(item.getId_category().toString()),
-                                            item.getCode(), item.getType_financial(), item.getNominal(), item.getNote(),
-                                            category.getTitle(), category.getImage_category(),
+                                            item.getCode(), item.getType_financial(), item.getDate(), item.getNominal(),
+                                            item.getNote(), category.getTitle(), category.getImage_category(),
                                             category.getImage_category_url(), item.getCreated_at(), item.getUpdated_at()
                                     )
                             );
                         }
-
-//                        if (item.getCategory() == null) {
-//                            CategoryEntity category = categoryRepository.fetchCategoryItem(item.getId_category().toString());
-//
-//                            listFinanceByDay.add(
-//                                    new HomepageResponse.Financial(
-//                                            Encryption.setEncrypt(item.getId().toString()), Encryption.setEncrypt(item.getId_category().toString()),
-//                                            item.getCode(), item.getType_financial(), item.getNominal(), item.getNote(),
-//                                            category.getTitle(), category.getImage_category(),
-//                                            category.getImage_category_url(), item.getCreated_at(), item.getUpdated_at()
-//                                    )
-//                            );
-//
-//                            isLog("success add null");
-//
-//                        } else  {
-//
-//                            try {
-//
-//                                listFinanceByDay.add(
-//                                        new HomepageResponse.Financial(
-//                                                Encryption.setEncrypt(item.getId().toString()), Encryption.setEncrypt(item.getId_category().toString()),
-//                                                item.getCode(), item.getType_financial(), item.getNominal(), item.getNote(),
-//                                                item.getCategory().getTitle(), item.getCategory().getImage_category(),
-//                                                item.getCategory().getImage_category_url(), item.getCreated_at(), item.getUpdated_at()
-//                                        )
-//                                );
-//
-//                                isLog("success add avail");
-//
-////
-////                                isLog("category : " + item.getCategory());
-////                                isLog("title : " + item.getCategory().getTitle());
-//
-//                            } catch (Exception e) {
-//                                isLog("error : " + e.getMessage());
-//                            }
-//
-//                        }
 
                     }
 
@@ -239,8 +200,8 @@ public class HomepageController {
 
                 for (FinancialEntity item : financeDatabase) {
 
-                    String dateSelected = item.getUpdated_at().toString().substring(0, 10);
-                    String monthSelected = item.getUpdated_at().toString().substring(0, 8);
+                    String dateSelected = item.getDate().toString().substring(0, 10);
+                    String monthSelected = item.getDate().toString().substring(0, 8);
 
                     int day = pos + 1;
                     String dateDay;

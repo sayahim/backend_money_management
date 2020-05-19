@@ -29,6 +29,7 @@ public class FinancialEntity implements Serializable {
     private String type_financial;
     private Long nominal;
     private String note;
+    private Timestamp date;
     private Timestamp created_at;
     private Timestamp updated_at;
 
@@ -36,21 +37,6 @@ public class FinancialEntity implements Serializable {
     @JoinColumn(name = "id_category", insertable = false, updatable = false)
     @PrimaryKeyJoinColumn
     private CategoryEntity category;
-//    @OneToMany(targetEntity= CategoryEntity.class, mappedBy="id_category",cascade=CascadeType.ALL, fetch = FetchType.LAZY) , referencedColumnName = "id", insertable = false, updatable = false
-//    private List<CategoryEntity> category;
-
-
-//    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-//    @JoinTable(name = "tten_courseservice_course_program_table", joinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"), inverseJoinColumns = @JoinColumn(name = "program_id", referencedColumnName = "program_id"))
-//    @ForeignKey(name="fk_tten_courseservice_course_table_course_id",inverseName="fk_tten_courseservice_program_table_program_id")
-//    private List<ProgramEntity> programs;``
-
-//    private List<CategoryEntity> category;
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "id", referencedColumnName = "id")
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "id")
 
     public FinancialEntity() {
     }
@@ -135,4 +121,11 @@ public class FinancialEntity implements Serializable {
         this.category = category;
     }
 
+    public Timestamp getDate() {
+        return date;
+    }
+
+    public void setDate(Timestamp date) {
+        this.date = date;
+    }
 }

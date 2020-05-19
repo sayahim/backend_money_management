@@ -14,6 +14,7 @@ import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.security.encryption.Encryption;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,22 +41,29 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    String MALE = "M";
+    String FEMALE = "F";
+
     @PostMapping(value = "register", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public StatusResponse create(
+    public ResponseEntity<?> create(
             @RequestParam MultiValueMap<String,String> paramMap) {
 
         String getName = paramMap.getFirst("name");
         String getEmail = paramMap.getFirst("email");
         String getPassword = paramMap.getFirst("password");
         String getPasswordConfirm = paramMap.getFirst("password_confirm");
+        String getGender = paramMap.getFirst("gender");
 
-        StatusResponse status = new StatusResponse();
+//        StatusResponse status = new StatusResponse();
         UsersEntity item = new UsersEntity();
 
         UsersEntity emailValidation = usersRepo.findByEmail(getEmail);
 
+        isLog("gender " + getGender);
         if (emailValidation != null) {
             isAccountUsedException("Email");
+        } else if(!getGender.equals(MALE) && !getGender.equals(FEMALE) ) {
+            isError("Wrong type data Gender");
         } else {
 
             if (!getName.isEmpty() && !getEmail.isEmpty() && !getPassword.isEmpty() && !getPasswordConfirm.isEmpty()) {
@@ -73,6 +81,7 @@ public class AuthController {
                             // set data
                             item.setName(getName);
                             item.setEmail(getEmail);
+                            item.setGender(getGender);
                             item.setPassword(getPassword);
                             item.setCreated_at(DateSetting.timestamp());
                             item.setUpdated_at(DateSetting.timestamp());
@@ -80,9 +89,8 @@ public class AuthController {
                             // save data
                             usersRepo.save(item);
 
-                            // set response callback
-                            status.setStatus(200);
-                            status.setMessage(MsgState.SUCCESS);
+                            return new ResponseEntity<UsersEntity>(item, HttpStatus.OK);
+
                         } else {
                             isError(MsgState.Pass_not_match);
                         }
@@ -102,7 +110,7 @@ public class AuthController {
 
         }
 
-        return status;
+        return null;
     }
 
     @PostMapping(value = "login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -116,7 +124,7 @@ public class AuthController {
         final UserDetails userDetails = jwtSecurityDetailService.loadUserByUsername(getEmail);
         final String token = jwtSecurityToken.generateToken(userDetails);
 
-        UserResponse dataUser;
+//        UserResponse dataUser;
 
         if (!getEmail.isEmpty() && !getPassword.isEmpty()) {
 
@@ -130,7 +138,7 @@ public class AuthController {
 
                 if (item.getPassword().equals(getPassword)) {
 
-                    dataUser = new UserResponse(
+                    UserResponse response = new UserResponse(
                             UserEncrypt.generateEncrypt(String.valueOf(item.getId())),
                             item.getName(),
                             item.getEmail(),
@@ -151,6 +159,7 @@ public class AuthController {
                     update.setName(item.getName());
                     update.setImage(item.getImage());
                     update.setEmail(item.getEmail());
+                    update.setGender(item.getGender());
                     update.setPassword(item.getPassword());
                     update.setPhone_number(item.getPhone_number());
                     update.setActive(item.getActive());
@@ -160,6 +169,7 @@ public class AuthController {
                     // update
                     usersRepo.save(update);
 
+                    return new ResponseEntity<UserResponse>(response, HttpStatus.OK);
 
                 } else {
                     throw new AccountIncorrectException();
@@ -170,7 +180,7 @@ public class AuthController {
             throw new DataNotCompleteException();
         }
 
-        return ResponseEntity.ok(dataUser);
+//        return null;
     }
 
     @PostMapping(value = "logout", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)

@@ -107,6 +107,7 @@ public class HomepageResponse {
         private String code;
         private String type_financial;
         private Long nominal;
+        private Timestamp date;
         private String note;
         private String title_category;
         private String image_category;
@@ -119,6 +120,7 @@ public class HomepageResponse {
                  String id_category,
                  String code,
                  String type_financial,
+                 Timestamp date,
                  Long nominal,
                  String note,
                  String title_category,
@@ -131,6 +133,7 @@ public class HomepageResponse {
             this.id_category = id_category;
             this.code = code;
             this.type_financial = type_financial;
+            this.date = date;
             this.nominal = nominal;
             this.note = note;
             this.title_category = title_category;
@@ -227,6 +230,14 @@ public class HomepageResponse {
 
         public void setImage_category_url(String image_category_url) {
             this.image_category_url = image_category_url;
+        }
+
+        public Timestamp getDate() {
+            return date;
+        }
+
+        public void setDate(Timestamp date) {
+            this.date = date;
         }
     }
 

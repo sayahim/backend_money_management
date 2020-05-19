@@ -25,7 +25,7 @@ public class ProfileStorageService {
     private final Path imageStorageLocation;
 
     public static String IMAGE_DIR = "/resources/images/";
-    public static String URL_ASSETS = "http://192.190.0.101:8080/api/images/profile/?name=";
+    public static String URL_ASSETS = "http://192.190.0.100:8080/api/images/profile/?name=";
 
     @Autowired
     public ProfileStorageService(ImageStorageProperties imageStorageProperties) {

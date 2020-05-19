@@ -179,7 +179,7 @@ public class ReportController {
                     CategoryEntity category = categoryRepository.fetchCategoryItem(Encryption.getDecrypt(getIdCategory));
                     data.add(new ReportDetailResponse.Data(
                             Encryption.setEncrypt(it.getId().toString()), Encryption.setEncrypt(it.getId_category().toString())
-                            , it.getType_financial(), it.getNominal(), it.getNote(), it.getCreated_at(),
+                            , it.getType_financial(), it.getNominal(), it.getNote(), it.getDate(),
                             category.getTitle(), category.getImage_category(), category.getImage_category_url()
                     ));
                 }

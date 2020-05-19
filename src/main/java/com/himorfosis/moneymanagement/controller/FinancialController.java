@@ -176,7 +176,7 @@ public class FinancialController {
         String getIdUser = paramMap.getFirst("id_user");
         String getTypeFinancials = paramMap.getFirst("type_financial");
         String getNominal = paramMap.getFirst("nominal");
-        String date = paramMap.getFirst("date");
+        String getDateTime = paramMap.getFirst("datetime");
 
         FinancialEntity create = new FinancialEntity();
 
@@ -209,12 +209,13 @@ public class FinancialController {
                     create.setType_financial(getTypeFinancials);
 
                     create.setCode("FIN_" + DateSetting.generateNameByDateTime() + getIdCategory + getIdUser);
-                    create.setCreated_at(DateSetting.generateDateToTimestamp(date));
-                    create.setUpdated_at(DateSetting.generateDateToTimestamp(date));
+                    create.setDate(DateSetting.generateDateToTimestamp(getDateTime));
+                    create.setCreated_at(DateSetting.timestamp());
+                    create.setUpdated_at(DateSetting.timestamp());
 
                     financialsRepository.save(create);
 
-                    Util.log(TAG, String.valueOf(create.getId()));
+                    isLog(String.valueOf(create.getId()));
 
                     return new ResponseEntity<>(create, HttpStatus.OK);
                 }
@@ -236,46 +237,45 @@ public class FinancialController {
         String getNote = paramMap.getFirst("note");
         String getIdCategory = paramMap.getFirst("id_category");
         String getNominal = paramMap.getFirst("nominal");
-        String getDate = paramMap.getFirst("date");
+        String getDateTime = paramMap.getFirst("datetime");
 
-        FinancialEntity create = new FinancialEntity();
+        FinancialEntity update = new FinancialEntity();
 
         if (getNominal == null || getIdCategory == null || getId == null) {
             isBadRequest();
         } else {
 
+            Long idFinance = Long.valueOf(Encryption.getDecrypt(getId));
             Long idCategory = Long.valueOf(Encryption.getDecrypt(getIdCategory));
             Long nominal = Long.valueOf(getNominal);
 
             isLog("id cat : " + idCategory);
 
-            FinancialEntity data = financialsRepository.findById(Long.valueOf(getId))
+            FinancialEntity data = financialsRepository.findById(idFinance)
                     .orElseThrow(() -> new DataNotFoundException(getId));
 
-            CategoryEntity categoryCheck = categoryRepository.findById(Long.valueOf(idCategory))
+            CategoryEntity categoryCheck = categoryRepository.findById(idCategory)
                     .orElseThrow(() -> new DataNotFoundException(getIdCategory));
 
                 if (data != null && categoryCheck != null) {
 
                     // set data
-                    create.setId(Long.valueOf(getId));
-                    create.setId_category(idCategory);
-                    create.setId_user(data.getId_user());
-                    create.setNominal(nominal);
-                    create.setNote(getNote);
-                    create.setType_financial(data.getType_financial());
+                    update.setId(idFinance);
+                    update.setId_category(idCategory);
+                    update.setId_user(data.getId_user());
+                    update.setNominal(nominal);
+                    update.setNote(getNote);
+                    update.setType_financial(data.getType_financial());
 
-                    create.setCode(data.getCode());
-                    create.setCreated_at(data.getCreated_at());
-                    create.setUpdated_at(DateSetting.timestamp());
+                    update.setCode(data.getCode());
+                    update.setDate(DateSetting.generateDateToTimestamp(getDateTime));
+                    update.setCreated_at(data.getCreated_at());
+                    update.setUpdated_at(DateSetting.timestamp());
 
-                    financialsRepository.save(create);
-
-                    Util.log(TAG, String.valueOf(create.getId()));
-
-                    return new ResponseEntity<>(create, HttpStatus.OK);
+                    financialsRepository.save(update);
+                    Util.log(TAG, String.valueOf(update.getId()));
+                    return new ResponseEntity<>(update, HttpStatus.OK);
                 }
-
 
         }
 

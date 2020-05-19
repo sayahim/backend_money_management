@@ -15,7 +15,9 @@ import com.himorfosis.moneymanagement.service.ProfileStorageService;
 import com.himorfosis.moneymanagement.utilities.DateSetting;
 import com.himorfosis.moneymanagement.utilities.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -121,24 +123,27 @@ public class UsersController {
         return status;
     }
 
-    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public StatusResponse updateProfilUser(
+    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProfilUser(
             @RequestPart(value = "image", required = false) MultipartFile getImage,
             @RequestPart(value = "id", required = true) @Valid String getId,
             @RequestPart(value = "name", required = true) @Valid String getName,
             @RequestPart(value = "born", required = true) @Valid String getBorn,
-            @RequestPart(value = "gender", required = true) @Valid String getGender
+            @RequestPart(value = "gender", required = true) @Valid String getGender,
+            @RequestPart(value = "phone", required = true) @Valid String getPhone
             ) {
-
-        StatusResponse status = new StatusResponse();
 
         isLog("getId : " + getId);
         isLog("getName :" + getName);
         isLog("getBorn : " + getBorn);
         isLog("getGender : " + getGender);
+        isLog("getPhone : " + getPhone);
+        isLog("getImage : " + getImage);
 
-        if (getName.isEmpty() || getId.isEmpty() || getGender.isEmpty() || getBorn.isEmpty()) {
+        if (getName.isEmpty() || getId.isEmpty() || getGender.isEmpty() || getBorn.isEmpty() || getPhone.isEmpty()) {
             isDataNotCompleted();
+        } else if(!getGender.equals("M") && !getGender.equals("F")) {
+            isBadRequestMessageException("Wrong type data Gender");
         } else {
 
             String decryptId = UserEncrypt.generateDecrypt(getId);
@@ -147,19 +152,20 @@ public class UsersController {
             UsersEntity users = usersRepo.findById(idUser)
                     .orElseThrow(() -> new DataNotFoundException(getId));
 
-            if (getGender.equals("L") || getGender.equals("P")) {
-
-                if (users != null) {
+                if (users == null) {
+                    isBadRequestMessageException("Wrong ID Category");
+                } else {
                     UsersEntity update = new UsersEntity();
-
                     if (getImage != null) {
-
                         isLog("with image");
 
                         // update dengan gambar
                         String typeFile = profileStorageService.checkTypeFileImage(getImage);
+                        isLog("type file : " + typeFile);
 
-                        if (typeFile.equals("jpg") || typeFile.equals("png")) {
+                        if (!typeFile.equals("jpg") && !typeFile.equals("png")) {
+                            isUnsupportMediaType();
+                        } else {
 
                             // delete image form directory
                             if (users.getImage() != null) {
@@ -176,11 +182,11 @@ public class UsersController {
                             update.setName(getName);
                             update.setImage(fileImageName);
                             update.setImage_url(profileStorageService.URL_ASSETS + fileImageName);
+                            update.setPhone_number(getPhone);
 
                             // default data
                             update.setEmail(users.getEmail());
                             update.setPassword(users.getPassword());
-                            update.setPhone_number(users.getPhone_number());
                             update.setToken(users.getToken());
                             update.setBorn(DateSetting.convertStringToDateSql(getBorn));
                             update.setGender(getGender);
@@ -189,28 +195,22 @@ public class UsersController {
                             update.setUpdated_at(DateSetting.timestamp());
 
                             usersRepo.save(update);
-
-                            status.setStatus(200);
-                            status.setMessage("Success Update Data");
-
-                        } else {
-                            isUnsupportMediaType();
                         }
 
                     } else {
 
                         isLog("without image");
 
-
                         // update data tanpa gambar
                         update.setId(idUser);
                         update.setName(getName);
                         update.setImage(users.getImage());
+                        update.setImage_url(users.getImage_url());
+                        update.setPhone_number(getPhone);
 
                         // default data
                         update.setEmail(users.getEmail());
                         update.setPassword(users.getPassword());
-                        update.setPhone_number(users.getPhone_number());
                         update.setBorn(DateSetting.convertStringToDateSql(getBorn));
                         update.setGender(getGender);
                         update.setToken(users.getToken());
@@ -219,21 +219,15 @@ public class UsersController {
                         update.setUpdated_at(DateSetting.timestamp());
 
                         usersRepo.save(update);
-
-                        status.setStatus(200);
-                        status.setMessage("Success Update Data");
                     }
-                } else {
-                    isBadRequestMessageException("Wrong ID Category");
+
+                    return new ResponseEntity<UsersEntity>(update, HttpStatus.OK);
+
                 }
-
-            } else {
-                isBadRequestMessageException("Wrong data type gender");
-            }
-
         }
 
-        return status;
+        return null;
+
     }
 
     private void isLog(String msg) {

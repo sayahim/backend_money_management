@@ -20,7 +20,7 @@ public class DateSetting {
     public static Timestamp generateDateToTimestamp(String date) {
 
         try {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date dataTime = formatter.parse(date);
             Timestamp timestamp = new Timestamp(dataTime.getTime());
             return timestamp;
@@ -33,7 +33,7 @@ public class DateSetting {
     public static String dateTimeGenerator() {
 
         LocalDateTime myDateObj = LocalDateTime.now();
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formatted = myDateObj.format(myFormatObj);
         return formatted;
     }

@@ -2,11 +2,13 @@ package com.himorfosis.moneymanagement.controller;
 
 import com.himorfosis.moneymanagement.entity.CategoryData;
 import com.himorfosis.moneymanagement.entity.CategoryEntity;
+import com.himorfosis.moneymanagement.entity.UsersEntity;
 import com.himorfosis.moneymanagement.exception.*;
 import com.himorfosis.moneymanagement.key.DataKey;
 import com.himorfosis.moneymanagement.model.CategoryModel;
 import com.himorfosis.moneymanagement.model.StatusResponse;
 import com.himorfosis.moneymanagement.repository.CategoryRepository;
+import com.himorfosis.moneymanagement.repository.UsersRepository;
 import com.himorfosis.moneymanagement.security.encryption.UserEncrypt;
 import com.himorfosis.moneymanagement.service.ImageStorageService;
 import com.himorfosis.moneymanagement.state.MsgState;
@@ -41,6 +43,8 @@ public class CategoryController {
     CategoryRepository categoryRepository;
     @Autowired
     ImageStorageService imageStorageService;
+    @Autowired
+    UsersRepository usersRepository;
 
     @GetMapping("/all")
     public List<CategoryModel> categoryAll() {
@@ -124,27 +128,6 @@ public class CategoryController {
         return category;
     }
 
-    @PostMapping(value = "/details", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<CategoryModel> categoryDetails(
-            @RequestParam MultiValueMap<String,String> paramMap) {
-
-        String getId = paramMap.getFirst("id");
-        String getDescrypt = Encryption.getDecrypt(getId);
-
-        CategoryEntity item = categoryRepository.findById(Long.valueOf(getDescrypt))
-                .orElseThrow(() -> new DataNotFoundException(getId));
-
-        CategoryModel data = new CategoryModel(
-                Encryption.setEncrypt(String.valueOf(item.getId())),
-                item.getTitle(),
-                item.getType_category(),
-                item.getImage_category(),
-                item.getImage_category_url(),
-                item.getCreated_at(),
-                item.getUpdated_at());
-
-        return new ResponseEntity<CategoryModel>(data, HttpStatus.OK);
-    }
 
     @PostMapping(value = "/userCreate", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> categoryUserCreate(
@@ -156,12 +139,14 @@ public class CategoryController {
         String type_category = paramMap.getFirst("type_category");
         String getUserId = UserEncrypt.generateDecrypt(user_id);
 
-        StatusResponse status = new StatusResponse();
         CategoryEntity item = new CategoryEntity();
 
-        if (title.isEmpty()) {
+        if (title.isEmpty() || assets.isEmpty() || user_id.isEmpty() || type_category.isEmpty()) {
             isDataNotComplete();
         } else {
+
+            UsersEntity user = usersRepository.findById(Long.valueOf(getUserId))
+                    .orElseThrow(() -> new DataNotFoundException(getUserId));
 
             item.setTitle(title);
             item.setImage_category(assets);
@@ -174,46 +159,41 @@ public class CategoryController {
 
         }
 
-        status.setStatus(200);
-        status.setMessage("Success Create Data");
-
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        return new ResponseEntity<>(item, HttpStatus.OK);
     }
 
     @PostMapping(value = "/userUpdate", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> categoryUserUpdate(
             @RequestParam MultiValueMap<String,String> paramMap) throws Exception {
 
+        String id_category = paramMap.getFirst("id");
         String assets = paramMap.getFirst("assets");
         String title = paramMap.getFirst("title");
-        String description = paramMap.getFirst("description");
-        String user_id = paramMap.getFirst("user_id");
-        String type_category = paramMap.getFirst("type_category");
-        String getUserId = UserEncrypt.generateDecrypt(user_id);
 
-        StatusResponse status = new StatusResponse();
+        Long id = Long.valueOf(Encryption.getDecrypt(id_category));
+
         CategoryEntity item = new CategoryEntity();
 
-        if (title.isEmpty() || description.isEmpty()) {
+        if (title.isEmpty() || id_category.isEmpty() || assets.isEmpty() ) {
             isDataNotComplete();
         } else {
 
-            item.setId(Long.parseLong(user_id));
+            CategoryEntity category = categoryRepository.findById(id)
+                    .orElseThrow(() -> new DataNotFoundException(id_category));
+
+            item.setId(id);
             item.setTitle(title);
             item.setImage_category(assets);
             item.setImage_category_url(imageStorageService.URL_ASSETS + assets);
-            item.setType_category(type_category);
-            item.setId_user_category(Integer.valueOf(getUserId));
-            item.setCreated_at(DateSetting.timestamp());
+            item.setType_category(category.getType_category());
+            item.setId_user_category(category.getId_user_category());
+            item.setCreated_at(category.getCreated_at());
             item.setUpdated_at(DateSetting.timestamp());
             categoryRepository.save(item);
 
         }
 
-        status.setStatus(200);
-        status.setMessage("Success Update Data");
-
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        return new ResponseEntity<>(item, HttpStatus.OK);
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -340,16 +320,35 @@ public class CategoryController {
                 status.setStatus(200);
                 status.setMessage("Success Update Data");
             } else {
-
                 isError("ID Category not found");
-//
-//                status.setStatus(500);
-//                status.setMessage("ID Category not found");
             }
         }
 
         return status;
     }
+
+    @PostMapping(value = "/details", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<CategoryModel> categoryDetails(
+            @RequestParam MultiValueMap<String,String> paramMap) {
+
+        String getId = paramMap.getFirst("id");
+        String getDescrypt = Encryption.getDecrypt(getId);
+
+        CategoryEntity item = categoryRepository.findById(Long.valueOf(getDescrypt))
+                .orElseThrow(() -> new DataNotFoundException(getId));
+
+        CategoryModel data = new CategoryModel(
+                Encryption.setEncrypt(String.valueOf(item.getId())),
+                item.getTitle(),
+                item.getType_category(),
+                item.getImage_category(),
+                item.getImage_category_url(),
+                item.getCreated_at(),
+                item.getUpdated_at());
+
+        return new ResponseEntity<CategoryModel>(data, HttpStatus.OK);
+    }
+
 
     @DeleteMapping(value = "delete", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StatusResponse delete(@RequestPart(value = "id", required = true) @Valid String getId) {
